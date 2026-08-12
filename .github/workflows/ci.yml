@@ -153,29 +153,36 @@ jobs:
     name: Pipeline Integrity Check
     runs-on: ubuntu-latest
     if: always()
+
     steps:
       - uses: actions/checkout@v4
 
       - name: Check required gates are still gating
+        id: gate-check
+        if: always()
         shell: bash
         run: |
           python3 - <<'PY'
+          import re
           from pathlib import Path
 
           text = Path(".github/workflows/ci.yml").read_text()
           failures = []
 
           for job in ["policy-gate", "governed-file-gate"]:
-              start = text.find(f"  {job}:")
-              if start == -1:
+              pattern = rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:|\Z)"
+              match = re.search(pattern, text)
+
+              if not match:
                   failures.append(f"{job} is missing")
                   continue
 
-              next_job = text.find("\n  ", start + 3)
-              section = text[start:next_job if next_job != -1 else len(text)]
+              section = match.group(0)
 
-              if "continue-on-error: true" in section:
-                  failures.append(f"{job} was weakened with continue-on-error: true")
+              if re.search(r"(?m)^    continue-on-error:\s*true\s*$", section):
+                  failures.append(
+                      f"{job} was weakened with continue-on-error: true"
+                  )
 
           if failures:
               for failure in failures:
@@ -186,21 +193,26 @@ jobs:
           PY
 
       - name: Check audit trail always runs
+        id: audit-check
+        if: always()
         shell: bash
         run: |
           python3 - <<'PY'
+          import re
           from pathlib import Path
 
           text = Path(".github/workflows/ci.yml").read_text()
-          start = text.find("  audit-trail:")
 
-          if start == -1:
+          pattern = r"(?ms)^  audit-trail:\n(.*?)(?=^  [A-Za-z0-9_-]+:|\Z)"
+          match = re.search(pattern, text)
+
+          if not match:
               print("FAIL: audit-trail job is missing")
               raise SystemExit(1)
 
-          section = text[start:]
+          section = match.group(0)
 
-          if "if: always()" not in section:
+          if not re.search(r"(?m)^    if:\s*always\(\)\s*$", section):
               print("FAIL: audit-trail no longer uses if: always()")
               raise SystemExit(1)
 
@@ -208,14 +220,17 @@ jobs:
           PY
 
       - name: Check change classifier still exists
+        id: classifier-check
+        if: always()
         shell: bash
         run: |
           python3 - <<'PY'
+          import re
           from pathlib import Path
 
           text = Path(".github/workflows/ci.yml").read_text()
 
-          if "  change-type-check:" not in text:
+          if not re.search(r"(?m)^  change-type-check:\s*$", text):
               print("FAIL: change-type-check job is missing")
               raise SystemExit(1)
 
@@ -225,21 +240,39 @@ jobs:
       - name: Create pipeline integrity report
         if: always()
         shell: bash
+        env:
+          GATE_RESULT: ${{ steps.gate-check.outcome }}
+          AUDIT_RESULT: ${{ steps.audit-check.outcome }}
+          CLASSIFIER_RESULT: ${{ steps.classifier-check.outcome }}
         run: |
           mkdir -p ci-artifacts
+
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
+
+          results = {
+              "required_gates": os.environ.get("GATE_RESULT", "unknown"),
+              "audit_trail_always": os.environ.get("AUDIT_RESULT", "unknown"),
+              "change_classifier_exists": os.environ.get(
+                  "CLASSIFIER_RESULT",
+                  "unknown"
+              )
+          }
+
+          overall_status = (
+              "success"
+              if all(result == "success" for result in results.values())
+              else "failure"
+          )
 
           report = {
               "job": "pipeline-integrity",
               "display_name": "Pipeline Integrity Check",
               "classification": "gating",
-              "checks": [
-                  "required gates must not use continue-on-error: true",
-                  "audit-trail must use if: always()",
-                  "change-type-check must exist"
-              ]
+              "overall_status": overall_status,
+              "results": results
           }
 
           Path("ci-artifacts/pipeline-integrity-report.json").write_text(

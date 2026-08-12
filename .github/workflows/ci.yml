@@ -147,10 +147,118 @@ jobs:
           retention-days: 90
           if-no-files-found: ignore
 
+  # GATING: protects the CI/CD guardrails from being weakened.
+  pipeline-integrity:
+    name: Pipeline Integrity Check
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required gates are still gating
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path(".github/workflows/ci.yml").read_text()
+          failures = []
+
+          for job in ["policy-gate", "governed-file-gate"]:
+              start = text.find(f"  {job}:")
+              if start == -1:
+                  failures.append(f"{job} is missing")
+                  continue
+
+              next_job = text.find("\n  ", start + 3)
+              section = text[start:next_job if next_job != -1 else len(text)]
+
+              if "continue-on-error: true" in section:
+                  failures.append(f"{job} was weakened with continue-on-error: true")
+
+          if failures:
+              for failure in failures:
+                  print(f"FAIL: {failure}")
+              raise SystemExit(1)
+
+          print("PASS: required gates remain blocking")
+          PY
+
+      - name: Check audit trail always runs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path(".github/workflows/ci.yml").read_text()
+          start = text.find("  audit-trail:")
+
+          if start == -1:
+              print("FAIL: audit-trail job is missing")
+              raise SystemExit(1)
+
+          section = text[start:]
+
+          if "if: always()" not in section:
+              print("FAIL: audit-trail no longer uses if: always()")
+              raise SystemExit(1)
+
+          print("PASS: audit-trail still uses if: always()")
+          PY
+
+      - name: Check change classifier still exists
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          text = Path(".github/workflows/ci.yml").read_text()
+
+          if "  change-type-check:" not in text:
+              print("FAIL: change-type-check job is missing")
+              raise SystemExit(1)
+
+          print("PASS: change-type-check still exists")
+          PY
+
+      - name: Create pipeline integrity report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p ci-artifacts
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = {
+              "job": "pipeline-integrity",
+              "display_name": "Pipeline Integrity Check",
+              "classification": "gating",
+              "checks": [
+                  "required gates must not use continue-on-error: true",
+                  "audit-trail must use if: always()",
+                  "change-type-check must exist"
+              ]
+          }
+
+          Path("ci-artifacts/pipeline-integrity-report.json").write_text(
+              json.dumps(report, indent=2)
+          )
+          PY
+
+      - name: Upload pipeline integrity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-integrity-report
+          path: ci-artifacts/pipeline-integrity-report.json
+          retention-days: 90
+          if-no-files-found: error
+
   audit-trail:
     name: Audit Trail
     runs-on: ubuntu-latest
-    needs: [change-type-check, policy-gate, governed-file-gate, advisory-review]
+    needs: [change-type-check, policy-gate, governed-file-gate, advisory-review, pipeline-integrity]
     if: always()
     steps:
       - uses: actions/checkout@v4

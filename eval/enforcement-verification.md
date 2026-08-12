@@ -95,3 +95,9 @@
 `6 passed in 0.17s`
 
 **Result:** All policy tests passed, including the documentation-writer policy/enforcement alignment check.
+## Final Commit Evidence
+
+**Passing policy test count:** 6 passed
+
+**Commit message recording the passing check count:**
+`eval: verify documentation-writer governance (6 policy checks passing)`

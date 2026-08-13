@@ -14,6 +14,7 @@ jobs:
       changed-files: ${{ steps.classify.outputs.changed-files }}
       requires-governed-check: ${{ steps.classify.outputs.requires-governed-check }}
       touches-policy: ${{ steps.classify.outputs.touches-policy }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,24 +33,24 @@ jobs:
           CHANGED_ONELINE=$(echo "$CHANGED" | tr '\n' ' ' | sed 's/[[:space:]]*$//')
           echo "changed-files=$CHANGED_ONELINE" >> "$GITHUB_OUTPUT"
 
-          # Files that affect agent behavior, tool contracts, evals, or governance.
           if echo "$CHANGED" | grep -qE '^(\.agents/|\.skills/|mcp-servers/|eval/|docs/governance-policy\.md|docs/routing-and-tool-grant-map\.md|scripts/run-agent\.sh)'; then
             echo "requires-governed-check=true" >> "$GITHUB_OUTPUT"
           else
             echo "requires-governed-check=false" >> "$GITHUB_OUTPUT"
           fi
 
-          # Policy/access-control-relevant files.
           if echo "$CHANGED" | grep -qE '^(docs/governance-policy\.md|mcp-servers/.*/allow-list\.json|scripts/run-agent\.sh|\.skills/)'; then
             echo "touches-policy=true" >> "$GITHUB_OUTPUT"
           else
             echo "touches-policy=false" >> "$GITHUB_OUTPUT"
           fi
 
+
   policy-gate:
     name: Policy Test Suite
     runs-on: ubuntu-latest
     needs: change-type-check
+
     steps:
       - uses: actions/checkout@v4
 
@@ -77,10 +78,12 @@ jobs:
           retention-days: 90
           if-no-files-found: ignore
 
-  governed-file-gate:
-    name: Governed File Check
+
+  eval-gate:
+    name: Evaluation Harness
     runs-on: ubuntu-latest
     needs: [change-type-check, policy-gate]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -88,7 +91,7 @@ jobs:
         if: needs.change-type-check.outputs.requires-governed-check == 'true'
         run: docker build -t agentic_engineer_4 .
 
-      - name: Run governed-file checks
+      - name: Run deterministic evaluation
         if: needs.change-type-check.outputs.requires-governed-check == 'true'
         run: |
           mkdir -p ci-artifacts
@@ -97,25 +100,45 @@ jobs:
             -v "$GITHUB_WORKSPACE/ci-artifacts":/reports \
             -w /workspace \
             agentic_engineer_4 \
-            python -m pytest eval/test_governed_files.py -v \
+            python -m pytest eval/test_deterministic.py -v \
               --json-report \
-              --json-report-file=/reports/governed-file-report.json
+              --json-report-file=/reports/deterministic-report.json
 
-      - name: Upload governed-file report
+      - name: Run rubric evaluation
+        if: needs.change-type-check.outputs.requires-governed-check == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir -p ci-artifacts
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE":/workspace:ro \
+            -v "$GITHUB_WORKSPACE/ci-artifacts":/reports \
+            -w /workspace \
+            -e ANTHROPIC_API_KEY \
+            agentic_engineer_4 \
+            python -m pytest eval/test_rubric_suite.py -v \
+              --json-report \
+              --json-report-file=/reports/rubric-report.json
+
+      - name: Upload evaluation reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: governed-file-report
-          path: ci-artifacts/governed-file-report.json
+          name: evaluation-reports
+          path: |
+            ci-artifacts/deterministic-report.json
+            ci-artifacts/rubric-report.json
           retention-days: 90
           if-no-files-found: ignore
 
-  advisory-review:
+
+  agent-review:
     name: Advisory Code Review
     runs-on: ubuntu-latest
     needs: [change-type-check, policy-gate]
     if: github.event_name == 'pull_request'
     continue-on-error: true
+
     steps:
       - uses: actions/checkout@v4
 
@@ -127,6 +150,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           mkdir -p ci-out ci-artifacts
+
           docker run --rm \
             -v "$GITHUB_WORKSPACE":/workspace:ro \
             -v "$GITHUB_WORKSPACE/ci-out":/out \
@@ -146,6 +170,7 @@ jobs:
           path: ci-artifacts/
           retention-days: 90
           if-no-files-found: ignore
+
 
   # GATING: protects the CI/CD guardrails from being weakened.
   pipeline-integrity:
@@ -168,7 +193,7 @@ jobs:
           text = Path(".github/workflows/ci.yml").read_text()
           failures = []
 
-          for job in ["policy-gate", "governed-file-gate"]:
+          for job in ["policy-gate", "eval-gate"]:
               pattern = rf"(?ms)^  {re.escape(job)}:\n(.*?)(?=^  [A-Za-z0-9_-]+:|\Z)"
               match = re.search(pattern, text)
 
@@ -288,11 +313,18 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
+
   audit-trail:
     name: Audit Trail
     runs-on: ubuntu-latest
-    needs: [change-type-check, policy-gate, governed-file-gate, advisory-review, pipeline-integrity]
+    needs:
+      - change-type-check
+      - policy-gate
+      - eval-gate
+      - agent-review
+      - pipeline-integrity
     if: always()
+
     steps:
       - uses: actions/checkout@v4
 
@@ -316,11 +348,12 @@ jobs:
             --touches-policy "${{ needs.change-type-check.outputs.touches-policy }}" \
             --requires-governed-check "${{ needs.change-type-check.outputs.requires-governed-check }}" \
             --policy-result "${{ needs.policy-gate.result }}" \
-            --governed-result "${{ needs.governed-file-gate.result }}" \
-            --review-result "${{ needs.advisory-review.result }}" \
+            --governed-result "${{ needs.eval-gate.result }}" \
+            --review-result "${{ needs.agent-review.result }}" \
             --artifacts ci-artifacts
 
       - name: Upload audit trail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: audit-trail

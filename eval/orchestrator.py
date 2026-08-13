@@ -47,7 +47,7 @@ import anthropic
 
 # ── model ────────────────────────────────────────────────────────────────────
 
-MODEL = "anthropic/claude-sonnet-4.6"
+MODEL = "anthropic/claude-haiku-4.5"
 
 # ── tool grant map (mirrors docs/routing-and-tool-grant-map.json) ─────────────
 

@@ -109,21 +109,29 @@ These provide evidence for deterministic conversion decisions.
 
 ### Partial / Needs Final Update
 
-1. Capstone-focused README and reproducible run path
-2. Final baseline-vs-after impact report
-3. Evaluation and calibration evidence
+1. Final baseline-vs-after impact report
+2. Evaluation and calibration evidence
 
-### Blocked by External Runtime Dependency
+### Completed Runtime Evidence
 
 1. Final production-like end-to-end model-backed run
-2. Final holdout/rubric evaluation results
-3. Final full-pipeline quality score
-4. Final full-pipeline review latency
-5. Final defect-rate measurement or proxy
-6. Final full-pipeline cycle time
-7. Final cost-per-run measurement
+2. Production-like run transcript and audit log
 
-The OpenRouter API key authenticates successfully, but the configured model-backed orchestration is currently blocked by a managed guardrail/data-policy routing restriction.
+Evidence:
+- logs/capstone-final-run-002.json
+- logs/capstone-final-run-002.log
+- Runtime: 59.6 seconds
+- Audit entries: 15
+- Model: anthropic/claude-haiku-4.5
+
+### Still Blocked / Pending Measurement
+
+1. Final holdout/rubric evaluation results
+2. Final full-pipeline quality score
+3. Final defect-rate measurement or proxy
+4. Final full-pipeline cycle time
+5. Final cost-per-run measurement
+
 
 ### Still Pending
 

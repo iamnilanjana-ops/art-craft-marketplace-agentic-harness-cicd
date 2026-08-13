@@ -1,8 +1,8 @@
-\# Capstone Artifact Inventory
+# Capstone Artifact Inventory
 
 
 
-\## Purpose
+## Purpose
 
 
 
@@ -10,7 +10,7 @@ This inventory maps the Agentic Engineer Capstone requirements to artifacts alre
 
 
 
-\## Existing Evidence
+## Existing Evidence
 
 
 
@@ -64,7 +64,7 @@ This inventory maps the Agentic Engineer Capstone requirements to artifacts alre
 
 
 
-\## Existing ADRs
+## Existing ADRs
 
 
 
@@ -72,11 +72,11 @@ Current ADRs include:
 
 
 
-\* `ADR-001-json-schema-validation-deterministic-conversion.md`
+* `ADR-001-json-schema-validation-deterministic-conversion.md`
 
-\* `ADR-002-routing-deterministic-conversion.md`
+* `ADR-002-routing-deterministic-conversion.md`
 
-\* `ADR-008-tester-acceptance-verification-deterministic-conversion.md`
+* `ADR-008-tester-acceptance-verification-deterministic-conversion.md`
 
 
 
@@ -84,51 +84,54 @@ These provide evidence for deterministic conversion decisions.
 
 
 
-\## Remaining Capstone Gaps
 
 
 
-The following artifacts still need to be completed or packaged for the final capstone:
 
+## Current Capstone Status
 
+### Complete
 
-1\. Capstone-focused README and reproducible run path
+1. Capstone workflow scope
+2. Artifact inventory
+3. Final architecture write-up
+4. ADR for rubric design
+5. ADR for memory layout
+6. ADR for MCP boundaries
+7. ADR for subagent scoping and routing
+8. ADR for governance policy
+9. Agent-to-deterministic conversion ADR evidence
+10. Tool-evolution drill and summary
+11. Stakeholder one-pager
+12. Ops-ready runbook
+13. Rubric self-check
+14. Measured deterministic-conversion impact evidence
 
-2\. Final architecture write-up
+### Partial / Needs Final Update
 
-3\. ADR for rubric design
+1. Capstone-focused README and reproducible run path
+2. Final baseline-vs-after impact report
+3. Evaluation and calibration evidence
 
-4\. ADR for memory layout
+### Blocked by External Runtime Dependency
 
-5\. ADR for MCP boundaries
+1. Final production-like end-to-end model-backed run
+2. Final holdout/rubric evaluation results
+3. Final full-pipeline quality score
+4. Final full-pipeline review latency
+5. Final defect-rate measurement or proxy
+6. Final full-pipeline cycle time
+7. Final cost-per-run measurement
 
-6\. ADR for subagent scoping and routing
+The OpenRouter API key authenticates successfully, but the configured model-backed orchestration is currently blocked by a managed guardrail/data-policy routing restriction.
 
-7\. ADR for governance policy
+### Still Pending
 
-8\. Final baseline-vs-after impact report
+1. Final sanitization review
+2. Five-to-ten-minute technical walkthrough video
+3. Final PDF packaging
 
-9\. Tool-evolution drill and summary
-
-10\. Stakeholder one-pager
-
-11\. Ops-ready runbook
-
-12\. Rubric self-check
-
-13\. Final production-like end-to-end run
-
-14\. Final evaluation results
-
-15\. Final quality, latency, defect-rate, cycle-time, and cost metrics
-
-16\. Final sanitization review
-
-17\. Five-to-ten-minute technical walkthrough video
-
-
-
-\## API-Key Dependency
+## API-Key Dependency
 
 
 
@@ -140,17 +143,17 @@ An API key or authenticated agent runtime may be required later for:
 
 
 
-\* Live multi-agent executions
+* Live multi-agent executions
 
-\* Rubric-based model evaluation
+* Rubric-based model evaluation
 
-\* Final holdout evaluation runs
+* Final holdout evaluation runs
 
-\* Production-like end-to-end workflow demonstration
+* Production-like end-to-end workflow demonstration
 
-\* Cost-per-run measurements
+* Cost-per-run measurements
 
-\* Tool-evolution model-swap experiments, if a model change is selected
+* Tool-evolution model-swap experiments, if a model change is selected
 
 
 
@@ -158,7 +161,7 @@ The capstone should continue with non-runtime tasks while API access is pending.
 
 
 
-\## Current Readiness
+## Current Readiness
 
 
 
@@ -167,6 +170,7 @@ The repository already contains substantial Module 1–4 evidence and is suitabl
 
 
 The next priority is to package and document the existing system before performing the final production-like integration and measurement runs.
+
 
 
 

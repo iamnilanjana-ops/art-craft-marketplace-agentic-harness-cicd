@@ -25,7 +25,6 @@ The repository includes:
 Build and run locally:
 
 ```bash
-cd module_4
 docker build -t agentic_engineer_4 .
 docker run -it --rm -p 8501:8501 -p 8502:8502 \
   -e SLACK_BOT_TOKEN=xoxb-your-token \
@@ -49,7 +48,7 @@ Full setup with Slack and Gmail (reads credentials from your shell environment):
 ```bash
 docker run -it --rm \
   -p 8501:8501 -p 8502:8502 \
-  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  -e OPENROUTER_API_KEY=$OPENROUTER_API_KEY \
   -e SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN \
   -e SLACK_TEAM_ID=$SLACK_TEAM_ID \
   -v "$PWD":/workspace \
@@ -70,6 +69,57 @@ Force a complete rebuild (no cached layers):
 ```bash
 docker build --no-cache -t agentic_engineer_4 .
 ```
+## Capstone Run
+
+The capstone production-like workflow is implemented in `eval/orchestrator.py`.
+
+The orchestrator coordinates the configured agent roles and writes an auditable transcript to `logs/`.
+
+### Windows PowerShell
+
+Set the OpenRouter API key in the current PowerShell session:
+
+```powershell
+$env:OPENROUTER_API_KEY = Read-Host -Prompt "Paste OpenRouter API key"
+```
+
+Verify only that the environment variable is populated:
+
+```powershell
+$env:OPENROUTER_API_KEY.Length
+```
+
+Do not print or commit the API key.
+
+Run the production-like orchestration through the Module 4 Docker image:
+
+```powershell
+docker run --rm `
+  -e OPENROUTER_API_KEY="$env:OPENROUTER_API_KEY" `
+  -v "${PWD}:/workspace" `
+  -w /workspace `
+  agentic_engineer_4:latest `
+  python eval/orchestrator.py `
+    --task "Review a representative code change, validate the handoff, route the work to the appropriate agents, and produce an auditable final result." `
+    --project "capstone-demo" `
+    --out "logs/capstone-final-run-001.json"
+```
+
+The expected transcript location is:
+
+`logs/capstone-final-run-001.json`
+
+### Current Runtime Status
+
+The OpenRouter API key authenticates successfully and the configured Claude model is available through the OpenRouter models endpoint.
+
+The current production-like run is blocked by an external OpenRouter guardrail/data-policy restriction:
+
+`404 - No endpoints available matching your guardrail restrictions and data policy`
+
+This external restriction is documented rather than bypassed. Governance controls and evaluation safeguards are not weakened to make the run succeed.
+
+Final production-like quality, latency, defect-rate, cycle-time, and cost measurements remain pending until the external runtime restriction is resolved.
 
 ## Run
 
@@ -463,7 +513,6 @@ docker login
 Build the image and tag it with your DockerHub username and repository name. Replace `heatonresearch` with your DockerHub username if different.
 
 ```bash
-cd module_4
 docker build -t heatonresearch/agentic_engineer_4:latest .
 ```
 

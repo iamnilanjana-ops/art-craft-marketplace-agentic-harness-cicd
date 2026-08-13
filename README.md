@@ -1,11 +1,20 @@
-# Module 4.2 — LaunchCode Agentic Engineer (CI/CD)
+# Agentic Engineer Capstone — Governed Multi-Agent Engineering Pipeline
 
-> **Note:** This repository covers **Module 4.2 (CI/CD) only.**
-> For Module 4.1 and Module 4.3, use the materials in the main course repository:
-> [https://github.com/jeffheaton/LaunchCodeAgenticEngineer/tree/main/module_4](https://github.com/jeffheaton/LaunchCodeAgenticEngineer/tree/main/module_4)
+This repository contains my Agentic Engineer Capstone: a forkable, containerized, governed multi-agent engineering pipeline that demonstrates safe agent orchestration, evaluation, governance, deterministic automation, and human checkpoints.
 
-Docker development environment for LaunchCode's **Agentic Programming** course, Module 4.2 (CI/CD). Extends the Module 3 environment with:
+## Capstone Workflow
 
+**Selected workflow:** AI-Assisted Code Review and Governance Pipeline
+
+The pipeline coordinates specialized agents across an engineering workflow:
+
+Developer Change → Orchestrator → Planner → Implementer → Reviewer → Tester → Human Approval → Project Manager
+
+Each agent receives scoped context and only the tools required for its role. Governance controls, deterministic checks, evaluation gates, and human approval are used to keep the workflow safe, predictable, and auditable.
+
+This capstone builds on artifacts developed throughout Modules 1–4, including the containerized agent harness, versioned agents and skills, persistent memory, MCP tooling, evaluation harness, governance policy, CI/CD guardrails, and deterministic conversion.
+
+The repository includes:
 - **Slack MCP server** — lets Claude Code prompts read and post to Slack
 - **Gmail MCP server** — lets Claude Code prompts read and send email
 - **Pre-configured skills** — custom slash commands available inside Claude Code

@@ -206,33 +206,22 @@ These controls reduce the blast radius of an incorrect or overreaching agent act
 
 
 
-## 9. Metrics Still Pending
+## 9. Final Production-Like Run Evidence
 
+The final production-like capstone run was completed using the course-approved Claude Haiku 4.5 model.
 
-
-The following capstone-wide metrics require the final production-like workflow runs and are not yet reported as final results:
-
-
-
-| Metric | Status |
-
+| Metric | Result |
 |---|---|
+| Model | anthropic/claude-haiku-4.5 |
+| Agent path | planner → implementer → reviewer → tester |
+| Full-pipeline runtime | 59.6 seconds |
+| Audit entries | 15 |
+| Transcript | logs/capstone-final-run-002.json |
+| Audit log | logs/capstone-final-run-002.log |
 
-| Full-pipeline quality score | Pending final run |
+The run successfully exercised retrieval, storage reads, and an implementer storage write. Reviewer and tester steps completed with recorded validation results.
 
-| Full-pipeline review latency | Pending final run |
-
-| Full-pipeline defect rate | Pending final run |
-
-| Full-pipeline cycle time | Pending final run |
-
-| Full-pipeline cost per run | Pending final run |
-
-
-
-These values will be added only after reproducible end-to-end measurements are available.
-
-
+The final run establishes production-like execution evidence. Full-pipeline quality score, defect-rate measurement, and reliable cost-per-run measurement are still pending because the current transcript does not provide a trustworthy final cost value.
 
 ## 10. Baseline Limitation
 

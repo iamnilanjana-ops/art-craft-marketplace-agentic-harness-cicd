@@ -76,7 +76,7 @@ Current ADRs include:
 
 \* `ADR-002-routing-deterministic-conversion.md`
 
-\* `ADR-002-tester-acceptance-verification-deterministic-conversion.md`
+\* `ADR-008-tester-acceptance-verification-deterministic-conversion.md`
 
 
 

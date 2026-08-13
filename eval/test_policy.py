@@ -44,7 +44,7 @@ def test_policy_gate_is_not_continue_on_error():
     policy_section_start = workflow.find("policy-gate:")
     assert policy_section_start != -1, "Missing policy-gate job"
 
-    next_job_start = workflow.find("\n  governed-file-gate:", policy_section_start)
+    next_job_start = workflow.find("\n  eval-gate:", policy_section_start)
     section = workflow[policy_section_start:next_job_start]
 
     assert "continue-on-error: true" not in section, (

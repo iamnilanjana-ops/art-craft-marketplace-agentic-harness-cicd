@@ -124,16 +124,15 @@ Evidence:
 - Audit entries: 15
 - Model: anthropic/claude-haiku-4.5
 
-### Still Blocked / Pending Measurement
+### Still Pending
 
-1. Final holdout/rubric evaluation results
+1. Final holdout/rubric evaluation results — holdout transcript set is not present in the repository
 2. Final full-pipeline quality score
 3. Final defect-rate measurement or proxy
-4. Final full-pipeline cycle time
-5. Final cost-per-run measurement
+4. Final cost-per-run measurement
 
 
-### Still Pending
+### Remaining Capstone Deliverables
 
 1. Final sanitization review
 2. Five-to-ten-minute technical walkthrough video

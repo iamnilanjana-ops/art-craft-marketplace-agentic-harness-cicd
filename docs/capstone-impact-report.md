@@ -24,21 +24,14 @@ One stable workflow step, handoff validation, was converted from agentic executi
 
 The measurements recorded in `docs/calibration-log.md` are:
 
-
-
 | Metric | Before: Agentic Validation | After: Deterministic Validation | Result |
-
 |---|---:|---:|---|
-
 | Average cycle time | 45 seconds | 0.2 seconds | Improved |
-
 | Token cost per run | $0.003 | $0 | Improved |
-
 | Review latency | ~30 seconds | ~5 seconds | Improved |
-
 | Deterministic harness checks | 7/7 passing | 7/7 passing | Quality preserved |
-
 | Output variance | Not recorded | Zero across 3 runs | Repeatable |
+
 
 
 

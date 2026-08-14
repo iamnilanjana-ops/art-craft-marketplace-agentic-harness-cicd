@@ -1,8 +1,8 @@
-\# Agentic Engineer Capstone Architecture Write-Up
+# Agentic Engineer Capstone Architecture Write-Up
 
 
 
-\## 1. Architecture Overview
+## 1. Architecture Overview
 
 
 
@@ -14,11 +14,11 @@ The system combines three execution approaches:
 
 
 
-\* \*\*Agentic execution\*\* for work that requires reasoning, interpretation, review, or synthesis.
+* **Agentic execution** for work that requires reasoning, interpretation, review, or synthesis.
 
-\* \*\*Deterministic execution\*\* for stable structural validation and routing logic where the same input should produce the same result.
+* **Deterministic execution** for stable structural validation and routing logic where the same input should produce the same result.
 
-\* \*\*Human checkpoints\*\* for actions that require approval, elevated permissions, or consequential decisions.
+* **Human checkpoints** for actions that require approval, elevated permissions, or consequential decisions.
 
 
 
@@ -30,7 +30,7 @@ The goal is not to make every workflow step agentic. Instead, each step is assig
 
 
 
-\## 2. Workflow
+## 2. Workflow
 
 
 
@@ -102,7 +102,7 @@ Before agent delegation, the handoff structure is validated using deterministic 
 
 
 
-\## 3. Orchestrator
+## 3. Orchestrator
 
 
 
@@ -114,17 +114,17 @@ Its responsibilities include:
 
 
 
-\* coordinating the workflow;
+* coordinating the workflow;
 
-\* detecting or interpreting the work that needs to be performed;
+* detecting or interpreting the work that needs to be performed;
 
-\* delegating tasks to the appropriate specialized role;
+* delegating tasks to the appropriate specialized role;
 
-\* maintaining workflow-level visibility;
+* maintaining workflow-level visibility;
 
-\* accessing audit information when required;
+* accessing audit information when required;
 
-\* enforcing the transition between workflow stages.
+* enforcing the transition between workflow stages.
 
 
 
@@ -136,21 +136,21 @@ Its configured storage operations include:
 
 
 
-\* `write\_entry`
+* `write\_entry`
 
-\* `read\_entry`
+* `read\_entry`
 
-\* `list\_entries`
+* `list\_entries`
 
-\* `update\_entry`
+* `update\_entry`
 
-\* `delete\_entry`
+* `delete\_entry`
 
-\* `audit\_read`
+* `audit\_read`
 
 
 
-The Orchestrator also has retrieval access with a data-classification ceiling of \*\*confidential\*\*.
+The Orchestrator also has retrieval access with a data-classification ceiling of **confidential**.
 
 
 
@@ -162,7 +162,7 @@ This broader access is limited to the coordination role rather than being inheri
 
 
 
-\## 4. Deterministic Handoff Validation
+## 4. Deterministic Handoff Validation
 
 
 
@@ -198,17 +198,17 @@ Using deterministic validation provides:
 
 
 
-\* repeatable behavior;
+* repeatable behavior;
 
-\* lower latency;
+* lower latency;
 
-\* no model-token cost for the validation itself;
+* no model-token cost for the validation itself;
 
-\* simpler testing;
+* simpler testing;
 
-\* clearer audit evidence;
+* clearer audit evidence;
 
-\* predictable failure handling.
+* predictable failure handling.
 
 
 
@@ -224,7 +224,7 @@ This conversion demonstrates the project's right-tool principle: a stable struct
 
 
 
-\## 5. Routing
+## 5. Routing
 
 
 
@@ -262,7 +262,7 @@ Routing therefore has a documented path toward deterministic execution when task
 
 
 
-\## 6. Implementer
+## 6. Implementer
 
 
 
@@ -270,7 +270,7 @@ The Implementer performs code and implementation work.
 
 
 
-\### Storage access
+### Storage access
 
 
 
@@ -278,17 +278,17 @@ The Implementer may:
 
 
 
-\* write entries;
+* write entries;
 
-\* read entries;
+* read entries;
 
-\* list entries;
+* list entries;
 
-\* update entries.
+* update entries.
 
 
 
-It may \*\*not delete entries\*\*.
+It may **not delete entries**.
 
 
 
@@ -296,7 +296,7 @@ The deletion restriction exists because implementation work does not require rem
 
 
 
-\### Retrieval
+### Retrieval
 
 
 
@@ -312,7 +312,7 @@ internal
 
 
 
-\### Skills
+### Skills
 
 
 
@@ -320,9 +320,9 @@ The Implementer may activate:
 
 
 
-\* `run-tests`
+* `run-tests`
 
-\* `summarize-session`
+* `summarize-session`
 
 
 
@@ -330,7 +330,7 @@ It may not activate:
 
 
 
-\* `draft-pr-description`
+* `draft-pr-description`
 
 
 
@@ -338,11 +338,11 @@ PR-description ownership belongs to the Project Manager.
 
 
 
-\### Autonomy
+### Autonomy
 
 
 
-The Implementer operates at \*\*medium autonomy\*\*.
+The Implementer operates at **medium autonomy**.
 
 
 
@@ -350,9 +350,9 @@ Human review or escalation is required before:
 
 
 
-\* shell commands outside the normal test suite;
+* shell commands outside the normal test suite;
 
-\* writing outside the current feature-branch scope.
+* writing outside the current feature-branch scope.
 
 
 
@@ -374,7 +374,7 @@ memory: mounted
 
 
 
-\## 7. Reviewer
+## 7. Reviewer
 
 
 
@@ -386,7 +386,7 @@ Its purpose is to inspect work independently rather than modify the work it is e
 
 
 
-\### Storage access
+### Storage access
 
 
 
@@ -394,9 +394,9 @@ The Reviewer may:
 
 
 
-\* read entries;
+* read entries;
 
-\* list entries.
+* list entries.
 
 
 
@@ -404,25 +404,25 @@ It may not:
 
 
 
-\* write entries;
+* write entries;
 
-\* update entries;
+* update entries;
 
-\* delete entries;
+* delete entries;
 
-\* inspect audit records.
-
-
-
-\### Retrieval
+* inspect audit records.
 
 
 
-Retrieval is permitted up to the \*\*internal\*\* classification level.
+### Retrieval
 
 
 
-\### Skills
+Retrieval is permitted up to the **internal** classification level.
+
+
+
+### Skills
 
 
 
@@ -430,7 +430,7 @@ The Reviewer may use:
 
 
 
-\* `summarize-session`
+* `summarize-session`
 
 
 
@@ -438,9 +438,9 @@ It may not use:
 
 
 
-\* `run-tests`
+* `run-tests`
 
-\* `draft-pr-description`
+* `draft-pr-description`
 
 
 
@@ -448,11 +448,11 @@ The governance policy explicitly prevents the Reviewer from running tools that w
 
 
 
-\### Autonomy
+### Autonomy
 
 
 
-Reviewer autonomy is \*\*low\*\*.
+Reviewer autonomy is **low**.
 
 
 
@@ -482,7 +482,7 @@ This separation protects reviewer independence and prevents a reviewing agent fr
 
 
 
-\## 8. Tester
+## 8. Tester
 
 
 
@@ -490,7 +490,7 @@ The Tester executes or evaluates tests and reports the results.
 
 
 
-\### Storage access
+### Storage access
 
 
 
@@ -498,9 +498,9 @@ The Tester may:
 
 
 
-\* read entries;
+* read entries;
 
-\* list entries.
+* list entries.
 
 
 
@@ -508,25 +508,25 @@ It may not:
 
 
 
-\* write entries;
+* write entries;
 
-\* update entries;
+* update entries;
 
-\* delete entries;
+* delete entries;
 
-\* read audit records.
-
-
-
-\### Retrieval
+* read audit records.
 
 
 
-The Tester may retrieve supporting information up to the \*\*internal\*\* classification level.
+### Retrieval
 
 
 
-\### Skills
+The Tester may retrieve supporting information up to the **internal** classification level.
+
+
+
+### Skills
 
 
 
@@ -534,9 +534,9 @@ The Tester may activate:
 
 
 
-\* `run-tests`
+* `run-tests`
 
-\* `summarize-session`
+* `summarize-session`
 
 
 
@@ -544,15 +544,15 @@ It may not activate:
 
 
 
-\* `draft-pr-description`
+* `draft-pr-description`
 
 
 
-\### Autonomy
+### Autonomy
 
 
 
-Tester autonomy is \*\*low\*\*.
+Tester autonomy is **low**.
 
 
 
@@ -572,7 +572,7 @@ This design separates test execution and reporting from implementation authority
 
 
 
-\## 9. Project Manager
+## 9. Project Manager
 
 
 
@@ -580,7 +580,7 @@ The Project Manager handles descriptions and project-level summaries rather than
 
 
 
-\### Storage access
+### Storage access
 
 
 
@@ -588,9 +588,9 @@ The Project Manager may:
 
 
 
-\* read entries;
+* read entries;
 
-\* list entries.
+* list entries.
 
 
 
@@ -598,17 +598,17 @@ It may not:
 
 
 
-\* write entries;
+* write entries;
 
-\* update entries;
+* update entries;
 
-\* delete entries;
+* delete entries;
 
-\* inspect audit information.
+* inspect audit information.
 
 
 
-\### Retrieval
+### Retrieval
 
 
 
@@ -616,11 +616,11 @@ Retrieval is denied for this role in the current workflow.
 
 
 
-Its recorded data-classification ceiling is therefore \*\*public\*\*.
+Its recorded data-classification ceiling is therefore **public**.
 
 
 
-\### Skills
+### Skills
 
 
 
@@ -660,7 +660,7 @@ This separation prevents presentation and summary responsibilities from acquirin
 
 
 
-\## 10. MCP Boundaries
+## 10. MCP Boundaries
 
 
 
@@ -680,15 +680,15 @@ Examples include:
 
 
 
-\* the Orchestrator receiving coordination and audit permissions;
+* the Orchestrator receiving coordination and audit permissions;
 
-\* the Implementer receiving state-update permissions without delete access;
+* the Implementer receiving state-update permissions without delete access;
 
-\* the Reviewer and Tester receiving read-oriented access;
+* the Reviewer and Tester receiving read-oriented access;
 
-\* the Project Manager receiving read access but no retrieval capability;
+* the Project Manager receiving read access but no retrieval capability;
 
-\* deterministic validation requiring no MCP access.
+* deterministic validation requiring no MCP access.
 
 
 
@@ -704,7 +704,7 @@ A role receives only the operations necessary for its responsibility, and anythi
 
 
 
-\## 11. Data Classification
+## 11. Data Classification
 
 
 
@@ -740,7 +740,7 @@ This prevents a role from gaining access to higher-sensitivity data simply becau
 
 
 
-\## 12. Persistent Storage and Retrieval
+## 12. Persistent Storage and Retrieval
 
 
 
@@ -756,13 +756,13 @@ Retrieval is permitted for:
 
 
 
-\* Orchestrator
+* Orchestrator
 
-\* Implementer
+* Implementer
 
-\* Reviewer
+* Reviewer
 
-\* Tester
+* Tester
 
 
 
@@ -770,7 +770,7 @@ Retrieval is denied for:
 
 
 
-\* Project Manager
+* Project Manager
 
 
 
@@ -778,11 +778,11 @@ The repository also includes:
 
 
 
-\* retrieval ground-truth evidence;
+* retrieval ground-truth evidence;
 
-\* retrieval validation evidence;
+* retrieval validation evidence;
 
-\* a retrieval quality report.
+* a retrieval quality report.
 
 
 
@@ -794,7 +794,7 @@ These artifacts allow retrieval behavior to be evaluated rather than assumed to 
 
 
 
-\## 13. Governance Model
+## 13. Governance Model
 
 
 
@@ -814,11 +814,11 @@ Access widening requires a pull request containing:
 
 
 
-\* the proposed permission;
+* the proposed permission;
 
-\* a concrete justification;
+* a concrete justification;
 
-\* confirmation that it does not conflict with known calibration near-misses.
+* confirmation that it does not conflict with known calibration near-misses.
 
 
 
@@ -834,7 +834,7 @@ The repository contains policy tests, governed-file tests, enforcement verificat
 
 
 
-\## 14. Human Checkpoints
+## 14. Human Checkpoints
 
 
 
@@ -850,15 +850,15 @@ Examples of checkpoint conditions include:
 
 
 
-\* Implementer shell activity outside the approved test path;
+* Implementer shell activity outside the approved test path;
 
-\* writes outside the intended feature scope;
+* writes outside the intended feature scope;
 
-\* Reviewer attempts to perform actions rather than advisory review;
+* Reviewer attempts to perform actions rather than advisory review;
 
-\* Tester attempts to modify tracked source files or stored project state;
+* Tester attempts to modify tracked source files or stored project state;
 
-\* requests requiring permissions beyond the role's policy.
+* requests requiring permissions beyond the role's policy.
 
 
 
@@ -870,7 +870,7 @@ The workflow therefore escalates instead of automatically expanding an agent's a
 
 
 
-\## 15. Evaluation and Policy Gates
+## 15. Evaluation and Policy Gates
 
 
 
@@ -882,23 +882,23 @@ The repository includes evaluation assets such as:
 
 
 
-\* holdout tasks;
+* holdout tasks;
 
-\* rubric-based evaluation;
+* rubric-based evaluation;
 
-\* deterministic tests;
+* deterministic tests;
 
-\* regression tests;
+* regression tests;
 
-\* policy tests;
+* policy tests;
 
-\* governed-file tests;
+* governed-file tests;
 
-\* red-team prompts and results;
+* red-team prompts and results;
 
-\* enforcement verification;
+* enforcement verification;
 
-\* calibration records.
+* calibration records.
 
 
 
@@ -910,7 +910,7 @@ The purpose of these gates is to make workflow quality and policy compliance tes
 
 
 
-\## 16. CI/CD Integration
+## 16. CI/CD Integration
 
 
 
@@ -950,7 +950,7 @@ docs/ci-step-design.md
 
 
 
-\## 17. Right-Tool Architecture
+## 17. Right-Tool Architecture
 
 
 
@@ -958,7 +958,7 @@ The architecture deliberately combines agents, deterministic code, and humans.
 
 
 
-\### Agentic steps
+### Agentic steps
 
 
 
@@ -966,21 +966,21 @@ Agents are used when the work requires:
 
 
 
-\* interpretation;
+* interpretation;
 
-\* planning;
+* planning;
 
-\* implementation reasoning;
+* implementation reasoning;
 
-\* code review;
+* code review;
 
-\* synthesis;
+* synthesis;
 
-\* context-dependent judgment.
+* context-dependent judgment.
 
 
 
-\### Deterministic steps
+### Deterministic steps
 
 
 
@@ -988,17 +988,17 @@ Deterministic code is used for:
 
 
 
-\* handoff validation;
+* handoff validation;
 
-\* stable structural checks;
+* stable structural checks;
 
-\* predictable routing where rules are sufficiently defined;
+* predictable routing where rules are sufficiently defined;
 
-\* governance and policy tests.
+* governance and policy tests.
 
 
 
-\### Human steps
+### Human steps
 
 
 
@@ -1006,13 +1006,13 @@ Humans remain responsible when:
 
 
 
-\* permissions must be expanded;
+* permissions must be expanded;
 
-\* an agent exceeds its defined scope;
+* an agent exceeds its defined scope;
 
-\* consequential or elevated actions are requested;
+* consequential or elevated actions are requested;
 
-\* final approval is required.
+* final approval is required.
 
 
 
@@ -1024,7 +1024,7 @@ This separation avoids using an expensive or nondeterministic agent for work tha
 
 
 
-\## 18. Auditability
+## 18. Auditability
 
 
 
@@ -1036,23 +1036,23 @@ Evidence includes:
 
 
 
-\* routing and tool-grant configuration;
+* routing and tool-grant configuration;
 
-\* governance policy;
+* governance policy;
 
-\* calibration log;
+* calibration log;
 
-\* evaluation outputs;
+* evaluation outputs;
 
-\* red-team results;
+* red-team results;
 
-\* CI results;
+* CI results;
 
-\* deterministic tests;
+* deterministic tests;
 
-\* ADRs;
+* ADRs;
 
-\* human checkpoint rules.
+* human checkpoint rules.
 
 
 
@@ -1064,7 +1064,7 @@ This allows a reviewer to inspect not only what the system did, but also why a p
 
 
 
-\## 19. Security and Failure Containment
+## 19. Security and Failure Containment
 
 
 
@@ -1100,7 +1100,7 @@ A failure in one agent therefore does not automatically grant access to every to
 
 
 
-\## 20. Architecture Summary
+## 20. Architecture Summary
 
 
 
@@ -1112,21 +1112,21 @@ The central design principles are:
 
 
 
-\* specialized agent roles;
+* specialized agent roles;
 
-\* least-privilege access;
+* least-privilege access;
 
-\* deterministic validation where judgment is unnecessary;
+* deterministic validation where judgment is unnecessary;
 
-\* scoped MCP storage and retrieval;
+* scoped MCP storage and retrieval;
 
-\* explicit data-classification boundaries;
+* explicit data-classification boundaries;
 
-\* evaluation and governance gates;
+* evaluation and governance gates;
 
-\* human escalation for higher-risk actions;
+* human escalation for higher-risk actions;
 
-\* auditable engineering decisions.
+* auditable engineering decisions.
 
 
 

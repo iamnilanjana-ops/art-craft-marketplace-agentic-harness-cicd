@@ -24,19 +24,12 @@ This capstone demonstrates a governed engineering pipeline that divides work acr
 
 The workflow coordinates specialized roles for:
 
-
-
-\* implementation;
-
-\* code review;
-
-\* testing;
-
-\* project summaries;
-
-\* documentation;
-
-\* workflow orchestration.
+- implementation;
+- code review;
+- testing;
+- project summaries;
+- documentation;
+- workflow orchestration.
 
 
 
@@ -64,17 +57,12 @@ Measured evidence from one deterministic conversion shows:
 
 
 
-| Metric                |      Before |       After |
-
-| --------------------- | ----------: | ----------: |
-
-| Validation cycle time |  45 seconds | 0.2 seconds |
-
-| Model-token cost      |  $0.003/run |      $0/run |
-
-| Review latency        | ~30 seconds |  ~5 seconds |
-
-| Structural checks     | 7/7 passing | 7/7 passing |
+| Metric | Before | After |
+| --- | ---: | ---: |
+| Validation cycle time | 45 seconds | 0.2 seconds |
+| Model-token cost | $0.003/run | $0/run |
+| Review latency | ~30 seconds | ~5 seconds |
+| Structural checks | 7/7 passing | 7/7 passing |
 
 
 
@@ -94,11 +82,11 @@ The project identified real governance near-misses, including:
 
 
 
-\* overly broad delete permissions;
+- overly broad delete permissions;
 
-\* a read-only reviewer nearly receiving testing capability;
+- a read-only reviewer nearly receiving testing capability;
 
-\* retrieval attempts above a role's approved data-classification level.
+- retrieval attempts above a role's approved data-classification level.
 
 
 
@@ -106,19 +94,19 @@ The final design addresses these risks through:
 
 
 
-\* least-privilege tool access;
+- least-privilege tool access;
 
-\* role-specific MCP allow-lists;
+- role-specific MCP allow-lists;
 
-\* data-classification ceilings;
+- data-classification ceilings;
 
-\* read-only containers for advisory roles;
+- read-only containers for advisory roles;
 
-\* policy and regression tests;
+- policy and regression tests;
 
-\* human escalation;
+- human escalation;
 
-\* red-team testing.
+- red-team testing.
 
 
 
@@ -166,25 +154,25 @@ The capstone currently demonstrates:
 
 
 
-\* containerized agent execution;
+- containerized agent execution;
 
-\* specialized agent roles;
+- specialized agent roles;
 
-\* deterministic handoff validation;
+- deterministic handoff validation;
 
-\* scoped storage and retrieval access;
+- scoped storage and retrieval access;
 
-\* evaluation and regression tests;
+- evaluation and regression tests;
 
-\* enforceable governance rules;
+- enforceable governance rules;
 
-\* CI/CD guardrails;
+- CI/CD guardrails;
 
-\* policy-bypass testing;
+- policy-bypass testing;
 
-\* architecture decision records;
+- architecture decision records;
 
-\* measurable latency and cost improvements for a converted workflow step.
+- measurable latency and cost improvements for a converted workflow step.
 
 
 

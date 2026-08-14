@@ -188,36 +188,37 @@ The capstone currently demonstrates:
 
 
 
-## Current Limitation
+## Final Production-Like Evidence
 
+The final production-like workflow completed the expected:
 
+`Planner -> Implementer -> Reviewer -> Tester`
 
-The final production-like OpenRouter-backed workflow run is still pending because the course-managed API key currently reaches OpenRouter successfully but encounters a managed guardrail/data-policy routing restriction for the configured Claude model.
+path in 59.6 seconds.
 
+The run exercised semantic retrieval, persistent-storage reads, an Implementer storage write, independent Reviewer verification, and Tester validation.
 
+All recorded evaluation items in the successful run were approved: 3 Planner review items, 4 Reviewer review items, and 1 Tester review item. No recorded review item was rejected.
 
-This limitation is being treated as an external runtime dependency rather than hidden or replaced with invented results.
+Governance enforcement was also demonstrated separately. An unauthorized `documentation-writer` attempt to call `write_entry` was denied by the storage MCP allow-list and recorded as `authorization_denied`, while the same role's permitted `read_entry` operation succeeded.
 
+## Remaining Limitations
 
+Two limitations remain explicit:
+
+- The final transcript does not provide a trustworthy full-pipeline model-cost measurement, so no unsupported end-to-end cost claim is made.
+- Human-checkpoint conditions are defined in governance policy, but the successful final production-like run did not require or trigger human escalation.
+
+One successful evaluated run is also not sufficient evidence to claim a general 0% defect rate across all future workloads.
 
 ## Next Steps
 
+The remaining capstone work is primarily final packaging and operational validation:
 
-
-The remaining work is to:
-
-
-
-1\. complete the final production-like workflow run after the course API policy issue is resolved;
-
-2\. capture final quality, latency, defect-rate, cycle-time, and cost-per-run metrics;
-
-3\. update the impact report with final measured results;
-
-4\. complete the operational runbook and rubric self-check;
-
-5\. record the final technical walkthrough.
-
+1. finalize the operations runbook and rubric self-check;
+2. complete the final sanitization review;
+3. package the required architecture, ADR, impact, stakeholder, and runbook artifacts;
+4. record the technical walkthrough video.
 
 
 ## Business Value

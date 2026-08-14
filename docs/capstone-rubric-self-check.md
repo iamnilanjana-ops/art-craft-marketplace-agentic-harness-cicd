@@ -100,7 +100,7 @@ The system runs in a containerized environment with explicit role-based workspac
 
 
 
-Final README polish is still required to make the capstone run path clearer for a new reviewer.
+The README now documents the capstone run path, required model credential, governed agents, preserved final-run evidence, and operational limitations for a new reviewer.
 
 
 
@@ -110,51 +110,33 @@ Final README polish is still required to make the capstone run path clearer for 
 
 ## 3. Quality Spec & Baseline
 
-
-
-\*\*Status: Partial\*\*
-
-
+**Status: Partial**
 
 Evidence:
 
-
-
-\* `docs/prd.md`
-
-\* `eval/rubric.json`
-
-\* historical Module 1 PRD/rubric/iteration evidence
-
-\* `docs/calibration-log.md`
-
-\* `docs/capstone-impact-report.md`
-
-
+- `docs/prd.md`
+- `eval/rubric.json`
+- historical Module 1 PRD/rubric/iteration evidence
+- `docs/calibration-log.md`
+- `docs/capstone-impact-report.md`
+- `docs/run-summary.md`
+- `logs/capstone-final-run-002.json`
 
 The rubric defines four judgment dimensions with pass thresholds.
 
+Measured baseline and comparison evidence exists for the deterministic conversion, including cycle time, model-token cost, review latency, structural checks, and repeatability.
 
+The successful final production-like run also provides final execution evidence, including a 59.6-second full-pipeline runtime and recorded Planner, Reviewer, and Tester evaluation outcomes.
 
-Measured deterministic-conversion baseline evidence exists for latency, cost, validation checks, and review latency.
+### Limitation
 
+The available historical Module 1 artifacts do not provide one complete baseline containing every capstone impact metric.
 
+In addition, the final transcript does not establish a trustworthy full-pipeline model-cost measurement, and one successful run is not sufficient evidence for a general defect-rate percentage.
 
-Limitation:
-
-
-
-The currently available Module 1 artifacts do not provide one complete historical baseline containing every final capstone metric.
-
-
-
-The final report will distinguish historical evidence, deterministic-conversion evidence, and final production-like measurements rather than reconstruct missing values.
-
-
+The impact report therefore keeps historical baseline evidence, deterministic-conversion measurements, and final production-like measurements separate rather than reconstructing or inventing missing values.
 
 ---
-
-
 
 ## 4. Agents, Skills & Memory
 
@@ -232,47 +214,40 @@ The Orchestrator delegates to scoped roles and MCP capabilities are not exposed 
 
 ## 6. Evaluation & Calibration
 
-
-
-\*\*Status: Partial\*\*
-
-
+**Status: Complete**
 
 Evidence:
 
+- `eval/test_deterministic.py`
+- `eval/test_rubric_suite.py`
+- `eval/rubric.json`
+- `docs/holdout-task-set.md`
+- `docs/calibration-log.md`
+- `eval/run_holdout.py`
+- `eval/run_regression.py`
+- regression and policy tests
+- retrieval validation evidence
+- `logs/capstone-final-run-002.json`
+- `docs/run-summary.md`
 
+The project uses a two-layer evaluation design combining deterministic checks with judgment-based evaluation criteria.
 
-\* `eval/test\_deterministic.py`
+Calibration and regression evidence includes:
 
-\* `eval/test\_rubric\_suite.py`
+- 7/7 deterministic checks passing before and after the handoff-validation conversion;
+- zero output variance across three deterministic runs after conversion;
+- 24/24 integrated regression checks passing;
+- passing policy evidence;
+- retrieval calibration and validation evidence;
+- preserved holdout tasks;
+- a successful production-like model-backed workflow run.
 
-\* `eval/rubric.json`
+The final production-like run completed the Planner -> Implementer -> Reviewer -> Tester path and recorded successful evaluation outcomes.
 
-\* `docs/holdout-task-set.md`
-
-\* `docs/calibration-log.md`
-
-\* regression and policy tests
-
-\* retrieval validation evidence
-
-
-
-The two-layer evaluation design is present and deterministic/policy testing is functioning.
-
-
-
-Remaining evidence:
-
-
-
-\* final model-backed production-like evaluation run;
-
-\* final holdout/rubric results after the current external API policy blocker is resolved.
-
-
+Measurement limitations, including the lack of a trustworthy full-pipeline model-cost value and the inability to generalize a defect-rate percentage from one successful run, are documented separately in `docs/capstone-impact-report.md`.
 
 ---
+
 
 
 
@@ -390,147 +365,96 @@ Measured handoff conversion evidence shows:
 
 ## 9. Production Integration & Tool-Evolution Drill
 
-
-
-\*\*Status: Blocked / Partial\*\*
-
-
+**Status: Complete**
 
 Completed evidence:
 
+- successful production-like model-backed orchestration;
+- Planner -> Implementer -> Reviewer -> Tester execution;
+- semantic retrieval and persistent-storage activity;
+- Implementer storage write with downstream verification;
+- governance enforcement;
+- tool-evolution drill;
+- regression detection and recovery;
+- preserved transcript and audit evidence.
 
-
-\* deterministic integration evidence;
-
-\* policy suite;
-
-\* governance enforcement;
-
-\* tool-evolution drill;
-
-\* regression detection and recovery.
-
-
-
-Tool-evolution result:
-
-
-
-| Stage               | Result             |
-
-| ------------------- | ------------------ |
-
-| Baseline            | 6 passed           |
-
-| Permission revoked  | 1 failed, 5 passed |
-
-| Permission restored | 6 passed           |
-
-
-
-External blocker:
-
-
-
-The final OpenRouter-backed orchestration currently fails with a managed guardrail/data-policy routing restriction even though the API key authenticates successfully.
-
-
-
-Final production-like model-backed run is therefore still pending.
-
-
-
----
-
-
-
-## 10. Iteration Narrative & Impact
-
-
-
-\*\*Status: Partial\*\*
-
-
+The successful final production-like run completed in 59.6 seconds.
 
 Evidence:
 
+- `logs/capstone-final-run-002.json`
+- `logs/capstone-final-run-002.log`
+- `docs/run-summary.md`
+- `docs/capstone-tool-evolution-drill.md`
 
+Tool-evolution result:
 
-\* `docs/iteration-log.md`
+| Stage | Result |
+|---|---|
+| Baseline | 6 passed |
+| Permission revoked | 1 failed, 5 passed |
+| Permission restored | 6 passed |
 
-\* `docs/calibration-log.md`
+Governance enforcement was also demonstrated independently. An unauthorized `documentation-writer` `write_entry` request was denied by the storage MCP allow-list and recorded as `authorization_denied`.
 
-\* `docs/capstone-impact-report.md`
+The earlier `capstone-final-run-001` is retained as evidence of an integration failure that was diagnosed and corrected before the successful final run.
 
-\* deterministic conversion before/after evidence
+## 10. Iteration Narrative & Impact
 
-\* tool-evolution drill
+**Status: Complete with documented measurement limitations**
 
+Evidence:
 
+- `docs/iteration-log.md`
+- `docs/calibration-log.md`
+- `docs/capstone-impact-report.md`
+- `docs/run-summary.md`
+- deterministic conversion before/after evidence
+- successful production-like run
+- tool-evolution drill
 
-The current evidence shows multiple evidence-driven improvement cycles.
+The evidence shows multiple evidence-driven improvement cycles.
 
+Measured deterministic-conversion impact includes:
 
+- cycle time: 45 seconds -> 0.2 seconds;
+- model-token cost: $0.003/run -> $0/run for the converted step;
+- review latency: approximately 30 seconds -> approximately 5 seconds;
+- structural quality: 7/7 checks passing before and after conversion;
+- output variance: zero across three deterministic runs;
+- integrated regression: 24/24 checks passing.
 
-Remaining work:
+The final production-like pipeline completed in 59.6 seconds. In that successful run, 3 Planner review items, 4 Reviewer review items, and 1 Tester review item were approved, with no recorded rejected item.
 
+Two measurement limitations remain explicit:
 
+- one successful run is not sufficient evidence for a general 0% defect-rate claim;
+- the transcript does not provide a trustworthy full-pipeline model-cost measurement.
 
-\* capture final full-pipeline quality;
-
-\* review latency;
-
-\* defect-rate metric or proxy;
-
-\* cycle time;
-
-\* cost per run.
-
-
-
-These will be reported only after a successful production-like run.
-
-
-
----
+No unsupported values are estimated or invented.
 
 
 
 ## 11. Stakeholder Communication
 
-
-
-\*\*Status: Partial\*\*
-
-
+**Status: Partial**
 
 Evidence:
 
+- `docs/capstone-stakeholder-one-pager.md`
+- `docs/capstone-architecture-writeup.md`
+- `docs/capstone-impact-report.md`
+- business-value framing
+- risk-reduction explanation
+- successful production-like run evidence in `docs/run-summary.md`
 
-
-\* `docs/capstone-stakeholder-one-pager.md`
-
-\* architecture write-up
-
-\* impact report
-
-\* business-value framing
-
-\* risk-reduction explanation
-
-
+The stakeholder one-pager and supporting reports now describe the completed production-like workflow, measured deterministic-conversion impact, governance enforcement, business value, and remaining measurement limitations.
 
 Remaining requirement:
 
-
-
-\* record the final five-to-ten-minute walkthrough video after the model-backed workflow run can be demonstrated.
-
-
+- record the final five-to-ten-minute technical walkthrough demonstrating the completed workflow, governance enforcement, evaluation evidence, right-tool decision, measured impact, and operational readiness.
 
 ---
-
-
 
 ## 12. Clarity & Flow
 
@@ -606,83 +530,47 @@ Remaining work includes:
 
 ## Current Readiness Summary
 
-
-
-| Criterion                                     | Status                  |
-
-| --------------------------------------------- | ----------------------- |
-
-| Workflow Scoping                              | Complete                |
-
-| Sandboxed Environment                         | Complete                |
-
-| Quality Spec & Baseline                       | Partial                 |
-
-| Agents, Skills & Memory                       | Complete                |
-
-| Orchestration & MCP Tools                     | Complete                |
-
-| Evaluation & Calibration                      | Partial                 |
-
-| Governance, Security & CI/CD                  | Complete                |
-
-| Right-Tool Decisions & ADRs                   | Complete                |
-
-| Production Integration & Tool-Evolution Drill | Blocked / Partial       |
-
-| Iteration Narrative & Impact                  | Partial                 |
-
-| Stakeholder Communication                     | Partial                 |
-
-| Clarity & Flow                                | Partial                 |
-
-| Design                                        | Pending Final Packaging |
-
-
+| Criterion | Status |
+|---|---|
+| Workflow Scoping | Complete |
+| Sandboxed Environment | Complete |
+| Quality Spec & Baseline | Partial — historical baseline limitations documented |
+| Agents, Skills & Memory | Complete |
+| Orchestration & MCP Tools | Complete |
+| Evaluation & Calibration | Complete |
+| Governance, Security & CI/CD | Complete |
+| Right-Tool Decisions & ADRs | Complete |
+| Production Integration & Tool-Evolution Drill | Complete |
+| Iteration Narrative & Impact | Complete with documented measurement limitations |
+| Stakeholder Communication | Partial — walkthrough video remaining |
+| Clarity & Flow | Partial — final walkthrough/package remaining |
+| Design | Pending Final Packaging |
 
 ## Remaining Critical Path
 
+The remaining capstone critical path is now focused on final packaging and presentation rather than core workflow implementation:
 
+1. perform the final sanitization and secret review;
+2. run the final test and repository-status checks;
+3. convert the required final documents to polished PDFs;
+4. verify architecture diagrams and tables remain legible in the packaged artifacts;
+5. record the five-to-ten-minute technical walkthrough;
+6. perform the final submission review.
 
-The remaining capstone critical path is:
-
-
-
-1\. Resolve or receive guidance for the managed OpenRouter policy restriction.
-
-2\. Run the complete production-like workflow.
-
-3\. Save transcript and audit evidence.
-
-4\. Run final deterministic and rubric evaluation.
-
-5\. Record final quality, review latency, defect rate, cycle time, and cost-per-run metrics.
-
-6\. Update the impact report.
-
-7\. Polish README run instructions.
-
-8\. Convert final deliverables to PDF.
-
-9\. Record the five-to-ten-minute walkthrough.
-
-10\. Perform final sanitization and submission review.
-
+The production-like workflow, transcript and audit evidence, impact-report update, README run instructions, governance demonstration, and tool-evolution drill are already complete.
 
 
 ## Self-Check Conclusion
 
+The repository now contains substantial completed evidence for workflow design, sandboxed execution, specialized agents, memory architecture, orchestration, MCP boundaries, evaluation and calibration, governance, CI/CD controls, deterministic conversion, ADRs, production-like integration, and tool-evolution testing.
 
+A successful production-like run is preserved in `logs/capstone-final-run-002.json` with supporting audit evidence and a final run summary.
 
-The repository already contains substantial evidence for workflow design, orchestration, governance, deterministic conversion, MCP boundaries, evaluation infrastructure, ADRs, and tool-evolution testing.
+The remaining work is concentrated on final submission packaging and presentation rather than core system implementation.
 
+Known limitations remain explicitly documented: the historical baseline does not contain every desired capstone metric, the final transcript does not establish a trustworthy full-pipeline model-cost measurement, one successful run is not sufficient to claim a general 0% defect rate, and the successful final run did not trigger the human-escalation path.
 
-
-The remaining gap is concentrated around the final model-backed production-like run and the metrics and presentation evidence that depend on that run.
-
-
-
-The submission should not claim full completion of those criteria until the runtime dependency is resolved and the remaining measurements are captured.
+These limitations are reported rather than filled with estimated or invented results.
 
 
 

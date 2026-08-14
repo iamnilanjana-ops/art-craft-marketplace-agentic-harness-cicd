@@ -15,10 +15,15 @@ Each agent receives scoped context and only the tools required for its role. Gov
 This capstone builds on artifacts developed throughout Modules 1–4, including the containerized agent harness, versioned agents and skills, persistent memory, MCP tooling, evaluation harness, governance policy, CI/CD guardrails, and deterministic conversion.
 
 The repository includes:
-- **Slack MCP server** — lets Claude Code prompts read and post to Slack
-- **Gmail MCP server** — lets Claude Code prompts read and send email
-- **Pre-configured skills** — custom slash commands available inside Claude Code
-- **Pre-configured agents** — autonomous sub-agents Claude Code can invoke for specialized tasks
+
+- **Specialized agents** — Planner, Implementer, Reviewer, Tester, Project Manager, Documentation Writer, and Code Reviewer roles with scoped responsibilities.
+- **Storage MCP server** — provides governed persistent project-state access with role-specific operation allow-lists and audit logging.
+- **Retrieval MCP server** — provides semantic retrieval with project scoping, similarity thresholds, classification ceilings, and retrieval audit evidence.
+- **Deterministic workflow steps** — handoff validation and routing move stable structural work out of model inference.
+- **Evaluation harness** — holdout, regression, deterministic, rubric, retrieval, and policy evidence used to diagnose and verify workflow behavior.
+- **Governance controls** — least-privilege permissions, read-only roles, data-classification ceilings, human-checkpoint rules, and red-team tests.
+- **CI/CD guardrails** — policy, governed-file, pipeline-integrity, advisory-review, and audit-trail checks.
+- **Persistent evidence** — transcripts, audit logs, calibration records, ADRs, and final capstone reports.
 
 ## Quick Start
 
@@ -26,12 +31,16 @@ Build and run locally:
 
 ```bash
 docker build -t agentic_engineer_4 .
-docker run -it --rm -p 8501:8501 -p 8502:8502 \
-  -e SLACK_BOT_TOKEN=xoxb-your-token \
-  -e SLACK_TEAM_ID=T0123456 \
+
+docker run -it --rm \
+  -p 8501:8501 -p 8502:8502 \
+  -e OPENROUTER_API_KEY=$OPENROUTER_API_KEY \
   -v "$PWD":/workspace \
   agentic_engineer_4
 ```
+For the core capstone workflow, `OPENROUTER_API_KEY` is the required model credential.
+
+Slack and Gmail credentials are optional and are only needed when exercising those integration-specific skills. Do not hardcode real credentials in the repository.
 
 Or pull the pre-built image from DockerHub:
 
@@ -102,24 +111,45 @@ docker run --rm `
   python eval/orchestrator.py `
     --task "Review a representative code change, validate the handoff, route the work to the appropriate agents, and produce an auditable final result." `
     --project "capstone-demo" `
-    --out "logs/capstone-final-run-001.json"
+    --out "logs/capstone-demo-run.json"
 ```
 
-The expected transcript location is:
+The example command writes its transcript to:
 
-`logs/capstone-final-run-001.json`
+`logs/capstone-demo-run.json`
+
+The preserved successful capstone evidence is:
+
+- `logs/capstone-final-run-002.json` — successful final transcript
+- `logs/capstone-final-run-002.log` — successful final audit log
+- `logs/capstone-final-run-001.json` — preserved earlier integration-failure evidence
+
+Do not overwrite the preserved final-run evidence when experimenting with the workflow.
 
 ### Current Runtime Status
 
-The OpenRouter API key authenticates successfully and the configured Claude model is available through the OpenRouter models endpoint.
+The production-like capstone workflow has completed successfully using the configured `anthropic/claude-haiku-4.5` model.
 
-The current production-like run is blocked by an external OpenRouter guardrail/data-policy restriction:
+The successful final run completed:
 
-`404 - No endpoints available matching your guardrail restrictions and data policy`
+`Planner -> Implementer -> Reviewer -> Tester`
 
-This external restriction is documented rather than bypassed. Governance controls and evaluation safeguards are not weakened to make the run succeed.
+in 59.6 seconds.
 
-Final production-like quality, latency, defect-rate, cycle-time, and cost measurements remain pending until the external runtime restriction is resolved.
+The run exercised semantic retrieval, persistent-storage reads, an Implementer storage write, independent Reviewer verification, and Tester validation.
+
+Final evidence:
+
+- Transcript: `logs/capstone-final-run-002.json`
+- Audit log: `logs/capstone-final-run-002.log`
+- Run summary: `docs/run-summary.md`
+- Impact report: `docs/capstone-impact-report.md`
+
+All recorded evaluation items in the successful run were approved. This is evidence of a successful evaluated run, but it is not sufficient to claim a general 0% defect rate.
+
+The available transcript does not establish a trustworthy full-pipeline model cost, so no unsupported end-to-end cost claim is made.
+
+Human-checkpoint conditions are defined in `docs/governance-policy.md`; the successful final run did not require or trigger human escalation.
 
 ## Run
 
@@ -276,45 +306,59 @@ Note: since the container is run with `--rm`, any skills added this way will be 
 
 ## Agents
 
-Agents are autonomous sub-agents that Claude Code can spin up to handle specialized tasks. Unlike skills (which are slash commands you invoke), agents are specialists that Claude Code invokes automatically when the task matches, or that you can request explicitly in a prompt.
+The capstone uses specialized agents with scoped responsibilities rather than one unrestricted general-purpose agent.
 
-Agents are defined as Markdown files with YAML frontmatter and stored in `.claude/agents/` (inside the container: `/root/.claude/agents/`). Source files live in `agents/` in this repo and are copied in at image build time.
+Agent definitions are version-controlled in the `agents/` directory. Runtime permissions are further constrained by the governance policy, MCP allow-lists, container permissions, and orchestration rules.
 
-### Pre-installed Agents
+### Governed Agents
 
-| Agent           | Trigger description                                                                           |
-| --------------- | --------------------------------------------------------------------------------------------- |
-| `code-reviewer` | Reviews recent git changes for quality, security, and maintainability without modifying files |
+| Agent | Primary responsibility | Access model |
+| --- | --- | --- |
+| `planner` | Analyze the task, retrieve relevant project context, and prepare the implementation plan | Read-oriented, scoped retrieval |
+| `implementer` | Perform approved implementation work and write permitted project state | Read/write within approved scope |
+| `reviewer` | Independently review implementation results and report findings | Read-only |
+| `tester` | Validate implementation behavior and acceptance criteria | Read-only for tracked project state |
+| `project-manager` | Produce project-facing summaries and coordination output | Advisory/read-only |
+| `documentation-writer` | Prepare documentation using approved project information | Read-only with scoped storage access |
+| `code-reviewer` | Review code changes for quality, security, and maintainability | Advisory/read-only |
 
-### Running an Agent
+The Orchestrator coordinates the workflow and applies routing, validation, governance, and evaluation controls around these specialized roles.
 
-**Explicitly — ask Claude Code to use it:**
+### Production-Like Agent Path
 
-```
-Review my recent changes using the code-reviewer agent.
-```
+The successful final capstone run exercised:
 
-**Automatically** — Claude Code will invoke the agent on its own when the task matches the agent's description. For example, after you ask Claude to write a new feature, it may proactively run the code-reviewer agent.
+`Planner -> Implementer -> Reviewer -> Tester`
 
-### How the code-reviewer Agent Works
+The Planner gathered relevant evidence, the Implementer performed the permitted state update, the Reviewer independently evaluated the result, and the Tester validated the implementation evidence.
 
-When invoked, `code-reviewer`:
+The successful run is preserved in:
 
-1. Runs `git diff` to find recent changes.
-2. Reads each modified file.
-3. Classifies every issue as **Critical**, **Warning**, or **Suggestion**.
-4. Provides a concrete fix example for every Critical and Warning item.
+- `logs/capstone-final-run-002.json`
+- `logs/capstone-final-run-002.log`
+- `docs/run-summary.md`
 
-It checks for:
+### Agent Governance
 
-- Code clarity and naming conventions
-- Duplicated logic
-- Error handling and input validation
-- Exposed secrets or API keys
-- Test coverage for new behavior
-- Performance implications
+Agents do not receive unrestricted access simply because a tool is available.
 
-The agent never edits or creates files — it only reports.
+Access is controlled through:
+
+- role-specific MCP allow-lists;
+- data-classification ceilings;
+- read-only workspace boundaries for advisory roles;
+- deterministic handoff validation;
+- policy and evaluation tests;
+- human-checkpoint rules for higher-risk actions.
+
+For example, the `documentation-writer` role is permitted to read approved stored project information but is not permitted to call `write_entry`. An attempted unauthorized write was denied by the storage MCP server and recorded as `authorization_denied` in the audit log.
+
+See:
+
+- `docs/governance-policy.md`
+- `docs/routing-and-tool-grant-map.md`
+- `eval/red-team-results.md`
+- `logs/storage-audit-log.jsonl`
 
 ### Adding a New Agent
 
@@ -469,7 +513,7 @@ docker run --rm -v "$PWD":/workspace agentic_engineer_4 \
 docker run --rm -v "$PWD":/workspace agentic_engineer_4 \
   python3 -m pytest eval/test_policy.py -v
 
-# Rubric suite placeholders
+# Rubric and documentation consistency checks
 docker run --rm -v "$PWD":/workspace agentic_engineer_4 \
   python3 -m pytest eval/test_rubric_suite.py -v
 ```
@@ -482,7 +526,7 @@ docker run --rm -v "$PWD":/workspace agentic_engineer_4 \
 | `test_deterministic_step.py` | `scripts/validate_handoff_deterministic.py` field validation logic |
 | `test_deterministic.py` | CLI invocation of the validator, directory structure, governance-policy content |
 | `test_policy.py` | Storage allow-list, retrieval allow-list, skill-scope files, and container permissions all agree with `docs/governance-policy.md` |
-| `test_rubric_suite.py` | Rubric/judge placeholders — confirms ADR and CI design docs contain required content |
+| `test_rubric_suite.py` | Rubric and documentation consistency checks — confirms ADR and CI design docs contain required content |
 
 ### Notes
 

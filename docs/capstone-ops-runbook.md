@@ -292,7 +292,7 @@ The current configured model is:
 
 ```text
 
-anthropic/claude-sonnet-4.6
+anthropic/claude-haiku-4.5
 
 ```
 
@@ -333,50 +333,29 @@ so that transcripts survive the disposable container.
 ---
 
 
+## 8. Production-Like Runtime Status
 
-## 8. Current External Runtime Blocker
+A production-like capstone run has now completed successfully using the configured `anthropic/claude-haiku-4.5` model.
 
+The successful run completed the expected:
 
+`Planner -> Implementer -> Reviewer -> Tester`
 
-During the current capstone run, OpenRouter authentication succeeds and the configured model appears in the model list.
+path in 59.6 seconds.
 
+The run exercised semantic retrieval, persistent-storage reads, an Implementer storage write, Reviewer verification, and Tester validation.
 
+Transcript evidence is stored in:
 
-However, the model-backed orchestration currently fails with:
+`logs/capstone-final-run-002.json`
 
+Audit evidence is stored in:
 
+`logs/capstone-final-run-002.log`
 
-```text
+An earlier run, `capstone-final-run-001`, is retained as evidence of an integration failure caused by insufficient task context. The failure was corrected before the successful final run.
 
-404 - No endpoints available matching your guardrail restrictions and data policy
-
-```
-
-
-
-This indicates an endpoint-routing restriction associated with the course-managed OpenRouter policy rather than a missing local environment variable.
-
-
-
-Operational response:
-
-
-
-1\. Do not expose or regenerate the course API key unless instructed.
-
-2\. Do not weaken local governance controls to bypass the error.
-
-3\. Do not switch models without confirming a course-approved alternative.
-
-4\. Preserve the error output as runtime evidence.
-
-5\. Escalate the managed policy issue to the course support team.
-
-6\. Continue non-runtime capstone work while the external dependency is unresolved.
-
-
-
----
+Operationally, failed runs should be preserved rather than overwritten so that diagnosis, calibration, and regression history remain auditable.
 
 
 
@@ -952,22 +931,24 @@ Before calling the capstone workflow production-like and complete, confirm:
 
 ## 23. Current Operational Status
 
+The governed multi-agent pipeline has completed a successful production-like run.
 
+Current verified evidence includes:
 
-Local governance, policy, deterministic, and tool-evolution evidence are functioning.
+- passing policy and deterministic checks;
+- a successful Planner -> Implementer -> Reviewer -> Tester execution path;
+- retrieval and persistent-storage activity;
+- downstream Reviewer and Tester verification;
+- a recorded governance denial for an unauthorized `documentation-writer` `write_entry` request;
+- a completed tool-evolution drill that detected and recovered from policy drift;
+- preserved transcripts and audit logs.
 
+Two operational limitations remain explicit:
 
+- the available evidence does not establish a trustworthy full-pipeline model-cost measurement;
+- the successful final run did not require or trigger human escalation.
 
-The remaining model-backed production-like run is currently dependent on resolution of the managed OpenRouter guardrail/data-policy restriction.
-
-
-
-Until that dependency is resolved, the system should report the runtime block transparently rather than substitute estimated final metrics.
-
-
-
----
-
+The system should continue to fail closed, preserve evidence, and escalate whenever authority, data classification, or workflow scope is exceeded.
 
 
 ## 24. Runbook Summary

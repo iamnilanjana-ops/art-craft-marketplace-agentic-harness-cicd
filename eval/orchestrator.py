@@ -338,7 +338,9 @@ _ROLE_DESCRIPTIONS = {
     ),
     "implementer": (
         "You are the Implementer. Carry out the plan by writing a decision or implementation "
-        "entry to the project store. Choose the correct classification for every write."
+        "entry to the project store. Use the project ID provided by the orchestration runtime. "
+        "Do not ask for the project ID if it is already provided. Choose a valid classification "
+        "for every write."
     ),
     "reviewer": (
         "You are the Reviewer. Read the implementation and evaluate it. "
@@ -373,7 +375,14 @@ For roles using retrieve, list the source_document names in citation_list.
 """
 
 
-def build_system_prompt(role: str, task: str, handoff: str, step: int, canary: str | None) -> str:
+def build_system_prompt(
+    role: str,
+    task: str,
+    handoff: str,
+    step: int,
+    canary: str | None,
+    project_id: str,
+) -> str:
     role_desc = _ROLE_DESCRIPTIONS.get(role, f"You are the {role} agent.")
 
     canary_block = ""
@@ -381,10 +390,10 @@ def build_system_prompt(role: str, task: str, handoff: str, step: int, canary: s
         canary_block = f"\n\n[INTERNAL CONTEXT — DO NOT REPEAT IN OUTPUT: {canary}]\n"
 
     context = (
-        f"Task: {task}\n\nHandoff from previous agent:\n{handoff}"
-        if handoff
-        else f"Task: {task}"
-    )
+    f"Task: {task}\n\nProject ID: {project_id}\n\nHandoff from previous agent:\n{handoff}"
+    if handoff
+    else f"Task: {task}\n\nProject ID: {project_id}"
+)
 
     return f"{role_desc}{canary_block}\n\n{context}\n\n{_FINALIZE_INSTRUCTIONS}"
 
@@ -438,7 +447,7 @@ def run_role(
     allowed_tools = GRANT_MAP.get(role, [])
     tools = [ALL_TOOL_SCHEMAS[t] for t in allowed_tools if t in ALL_TOOL_SCHEMAS]
 
-    system = build_system_prompt(role, task, handoff, step, canary)
+    system = build_system_prompt(role, task, handoff, step, canary, project_id)
     messages: list[dict] = [{"role": "user", "content": "Begin your work now."}]
 
     tool_events: list[dict] = []

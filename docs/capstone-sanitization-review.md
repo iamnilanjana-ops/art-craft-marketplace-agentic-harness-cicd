@@ -1,44 +1,75 @@
-\# Capstone Sanitization Review
+# Capstone Sanitization Review
 
+## Purpose
 
+This review verifies that the final capstone repository and submission evidence do not expose secrets, private credentials, personal information, or machine-specific sensitive data.
 
-\## Purpose
+## Checks Performed
 
+### Secret-pattern scan
 
+The repository was scanned for common credential patterns, including:
 
-This review checks that the capstone repository does not intentionally include secrets or private credentials.
+- OpenRouter API keys;
+- Anthropic API keys;
+- Slack bot tokens;
+- Google API keys;
+- private-key blocks;
+- suspicious hard-coded `OPENROUTER_API_KEY` assignments.
 
+The only match was a test regex in `eval/test_policy.py` used to detect Anthropic-style key patterns. No actual secret value was found.
 
+### Personal and local-data scan
 
-\## Checks Performed
+The repository was scanned for:
 
+- local Windows user paths;
+- the local project path;
+- personal names;
+- personal email addresses;
+- `credentials.json`;
+- `token.json`.
 
+No personal name, personal email address, or machine-specific Windows path was found.
 
-\- OpenRouter API keys are provided through environment variables, not hard-coded.
+References to `credentials.json` and `token.json` occur only in documentation describing OAuth setup and safe credential handling.
 
-\- No API key value is stored in `eval/orchestrator.py`.
+### Sensitive-file scan
 
-\- `.gitignore` is used for local/private files.
+The repository was checked for actual sensitive files matching names or extensions such as:
 
-\- The repository contains documentation and configuration rather than actual credential values.
+- `credentials.json`;
+- `token.json`;
+- `.env`;
+- `.pem`;
+- `.key`;
+- `id_rsa`;
+- `id_ed25519`.
 
-\- The final capstone run logs contain workflow evidence, not API credentials.
+No matching sensitive file was found.
 
+### Runtime evidence review
 
+Final workflow evidence under `logs/` was reviewed for secret exposure. The logs contain workflow, audit, retrieval, storage, evaluation, and governance evidence rather than API credential values.
 
-\## Result
+## Sanitization Result
 
+No actual API key, OAuth credential file, private key, personal email address, personal name, or machine-specific sensitive path was found in the reviewed repository content.
 
+The capstone uses environment variables for runtime credentials and does not intentionally persist secret values in committed artifacts.
 
-The repository is ready for final review. No API key or secret value was intentionally added to the committed capstone artifacts.
+## Submission Guidance
 
+Before final submission:
 
+- do not add local `.env`, OAuth token, or credential files;
+- do not expose API keys in screenshots or the walkthrough video;
+- do not display environment-variable values during recording;
+- keep final PDFs limited to sanitized project evidence;
+- preserve placeholder credential examples rather than real values.
 
-\## Note
+## Final Status
 
+**Sanitization review: PASS**
 
-
-Local runtime files under `logs/` should be reviewed before final submission to confirm that they contain no secrets.
-
-
-
+The repository is suitable for final packaging based on the completed repository scans and reviewed runtime evidence.

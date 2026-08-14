@@ -271,27 +271,28 @@ Detailed evidence is available in:
 
 `docs/capstone-tool-evolution-drill.md`
 
-## 12. Current Conclusion
+## 12. Final Conclusion
 
+The available evidence supports measurable improvements from right-sizing and governing the capstone workflow.
 
+For the handoff-validation step:
 
-The evidence currently supports a strong conclusion for the handoff-validation conversion:
+- average cycle time decreased from 45 seconds to 0.2 seconds;
+- model-token cost decreased from $0.003 per run to $0 for that deterministic step;
+- review latency decreased from approximately 30 seconds to approximately 5 seconds;
+- deterministic harness quality remained 7/7 passing before and after conversion;
+- repeated deterministic output showed zero variance across three runs;
+- the integrated regression suite remained 24/24 passing.
 
+The final production-like workflow also completed the expected planner → implementer → reviewer → tester path in 59.6 seconds. It exercised retrieval, persistent-storage reads, an Implementer storage write, downstream Reviewer verification, and Tester validation.
 
+In the successful final run, all recorded evaluation items were approved: 3 Planner review items, 4 Reviewer review items, and 1 Tester review item. No recorded review item was rejected in that run. This is evidence of a successful evaluated run, but it is not sufficient to claim a general 0% defect rate across all workloads.
 
-- cycle time decreased;
+Governance enforcement was also demonstrated separately. A documentation-writer attempt to call the unauthorized `write_entry` operation was denied by the storage MCP allow-list and recorded as `authorization_denied` in the storage audit log, while the role's permitted `read_entry` operation succeeded.
 
-- model-token cost was removed from that step;
+The tool-evolution drill further demonstrated that policy drift is detectable: the policy suite changed from 6 passing tests to 1 failing and 5 passing when a permission was intentionally revoked, then returned to 6 passing after the permission was restored.
 
-- review latency decreased;
+Two limitations remain explicit. The final transcript records a zero token-cost field, but the available evidence does not establish a trustworthy full-pipeline model cost, so no unsupported end-to-end cost claim is made. Human-checkpoint conditions are defined in governance policy, but the successful final production-like run did not require or trigger human escalation.
 
-- deterministic checks remained passing;
-
-- repeated deterministic output showed zero variance;
-
-- integrated regression checks remained passing.
-
-
-
-A broader claim about total capstone impact will be made only after the final production-like workflow is executed and measured.
+Overall, the evidence shows that deterministic conversion reduced latency and model-token cost for a stable step without detected quality regression, while scoped MCP permissions, evaluation gates, audit logging, and CI policy checks improved the workflow's operational control and traceability.
 

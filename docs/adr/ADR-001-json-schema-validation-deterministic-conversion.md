@@ -28,3 +28,10 @@ Cycle time fell from 45 seconds to 0.2 seconds, token cost fell from $0.003 per 
 - Before-conversion measurement: `docs/calibration-log.md`, before-conversion entry.
 - After-conversion measurement in isolation: `docs/calibration-log.md`, after-conversion entry.
 - Integrated end-to-end regression check: `docs/calibration-log.md`, integrated end-to-end regression check.
+
+## Open Risks
+
+- The deterministic validator may need updates if schemas/handoff.json changes.
+- A schema-valid handoff can still be semantically incorrect; structural validation does not replace agent or human judgment.
+- Error messages may need to become more descriptive if future debugging requires more context.
+- New edge cases must be added to deterministic tests before the validator is considered safe under an expanded handoff format.

@@ -1,4 +1,4 @@
-﻿# Agentic Engineer Capstone â€” Ops-Ready Runbook
+﻿# Agentic Engineer Capstone -- Ops-Ready Runbook
 
 
 
@@ -34,17 +34,17 @@ Primary execution path:
 
 Developer Change
 
-â†’ Orchestrator
+-> Orchestrator
 
-â†’ Deterministic Handoff Validation
+-> Deterministic Handoff Validation
 
-â†’ Role Routing
+-> Role Routing
 
-â†’ Implementer / Reviewer / Tester / Project Manager
+-> Implementer / Reviewer / Tester / Project Manager
 
-â†’ Policy and Evaluation Gates
+-> Policy and Evaluation Gates
 
-â†’ Human Checkpoint
+-> Human Checkpoint
 
 ```
 

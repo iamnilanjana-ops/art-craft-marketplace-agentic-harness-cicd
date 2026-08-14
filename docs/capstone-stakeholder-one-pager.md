@@ -1,4 +1,4 @@
-﻿# Agentic Engineer Capstone â€” Stakeholder One-Pager
+﻿# Agentic Engineer Capstone -- Stakeholder One-Pager
 
 
 

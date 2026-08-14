@@ -1,4 +1,4 @@
-﻿# Agentic Engineer Capstone â€” Rubric Self-Check
+﻿# Agentic Engineer Capstone -- Rubric Self-Check
 
 
 
@@ -58,7 +58,7 @@ Evidence:
 
 \* Job-seeker/no-deployment path selected
 
-\* Existing Module 1â€“4 evidence and gaps inventoried
+\* Existing Module 1-4 evidence and gaps inventoried
 
 
 

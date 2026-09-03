@@ -170,6 +170,11 @@ The rubric is implemented in `eval/rubric.json` with four dimensions:
 
 Each dimension requires a score of at least 3, and the overall passing threshold is 12.
 
+The threshold of 12 is intentional because there are four quality dimensions and each dimension must score at least 3. A total of 12 therefore represents the minimum acceptable result of 3 + 3 + 3 + 3.
+
+This prevents a high score in one area from hiding a serious weakness in another. For example, a run should not pass merely because it is very clear if it is incorrect or poorly grounded.
+
+From a business perspective, this threshold reduces reviewer rework by requiring every passing result to be independently acceptable for correctness, task adherence, groundedness, and clarity before it moves forward. Scores below 3 in any dimension indicate that additional review or correction is still needed.
 
 
 Calibration evidence also shows that the wider evaluation system is used alongside deterministic and policy checks rather than in isolation.

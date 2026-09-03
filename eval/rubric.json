@@ -13,6 +13,8 @@
       },
       "examples": {
         "1": "Asked to reject empty emails; the code does not run.",
+        "2": "Asked to reject empty emails; empty values are rejected, but malformed addresses are still accepted.",
+        "3": "Asked to reject empty emails; empty and malformed addresses are rejected, but one minor edge case is not covered.",
         "4": "Asked to reject empty emails; empty and malformed addresses are refused and the change is tested."
       }
     },
@@ -28,6 +30,8 @@
       },
       "examples": {
         "1": "Asked to fix one parser; rewrote three unrelated modules.",
+        "2": "Asked to fix one parser; fixed it but also changed unrelated formatting and configuration files.",
+        "3": "Asked to fix one parser; changed the parser and made one small related cleanup that was not required.",
         "4": "Asked to fix one parser; changed only that parser."
       }
     },
@@ -43,6 +47,8 @@
       },
       "examples": {
         "1": "Cited a document, then stated the opposite of what it said.",
+        "2": "Used the retrieved document correctly for some claims but added an important unsupported assumption.",
+        "3": "Used retrieved evidence accurately, with one minor inference that is not directly stated in the source.",
         "4": "Summarized the cited lesson without adding anything not in it."
       }
     },
@@ -58,6 +64,8 @@
       },
       "examples": {
         "1": "A plan with no discernible order of steps.",
+        "2": "A plan contains the necessary ideas but the order is confusing and requires interpretation.",
+        "3": "A plan is clear and usable but has one minor wording or organization issue.",
         "4": "A numbered plan a reader could follow without questions."
       }
     }

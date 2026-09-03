@@ -34,6 +34,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -48,6 +49,12 @@ import anthropic
 # ── model ────────────────────────────────────────────────────────────────────
 
 MODEL = "anthropic/claude-haiku-4.5"
+# ── reliability and cost controls ──────────────────────────────────────────────
+
+REQUEST_TIMEOUT_SECONDS = 30.0
+MAX_RETRIES = 2
+MAX_ITERATIONS_PER_ROLE = 6
+MAX_TOKENS_PER_RUN = 24000
 
 # ── tool grant map (mirrors docs/routing-and-tool-grant-map.json) ─────────────
 
@@ -148,154 +155,212 @@ ALL_TOOL_SCHEMAS: dict[str, dict] = {
     },
 }
 
-# ── simulated tool execution ──────────────────────────────────────────────────
-
-_entry_store: dict[str, dict] = {}
-
+# ── real MCP component adapters ────────────────────────────────────────────────
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+def _load_module(module_name: str, relative_path: str):
+    """Load one of the real MCP server modules from this repository."""
+    module_path = Path(__file__).resolve().parent.parent / relative_path
+    spec = importlib.util.spec_from_file_location(module_name, module_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load MCP module: {module_path}")
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def _sim_retrieve(inputs: dict) -> dict:
-    """Return realistic fake retrieval results (above the 0.65 similarity floor)."""
+STORAGE_MCP = _load_module(
+    "capstone_storage_mcp",
+    "mcp-servers/storage/server.py",
+)
+
+RETRIEVAL_MCP = _load_module(
+    "capstone_retrieval_mcp",
+    "mcp-servers/retrieval/server.py",
+)
+
+
+def _set_calling_role(module, role: str) -> None:
+    """Set the role used by the MCP server's allow-list enforcement."""
+    module.CALLING_ROLE = role
+
+
+def _storage_key(project_id: str, entry_id: str) -> str:
+    """Namespace storage entries by project while exposing a clean entry_id to agents."""
+    return f"{project_id}:{entry_id}"
+
+
+def _real_retrieve(inputs: dict, role: str) -> dict:
+    _set_calling_role(RETRIEVAL_MCP, role)
+
+    query = str(inputs.get("query", ""))
+    top_k = int(inputs.get("top_k", 3))
+
+    results = RETRIEVAL_MCP.retrieve(
+        query=query,
+        top_k=top_k,
+    )
+
+    # Normalize the real retrieval server's list response to the shape expected
+    # by the orchestrator and transcript.
     return {
-        "results": [
-            {
-                "source_document": "incident-report-2024-q3.md",
-                "chunk_index": 0,
-                "excerpt": (
-                    "Rate limit incident Q3 2024: API consumers were not warned 24 hours before "
-                    "the rate limit threshold was lowered from 1000 to 500 requests per minute. "
-                    "Several clients experienced outages lasting 2-4 hours."
-                ),
-                "classification": "internal",
-                "retrieval_method": "vector",
-                "similarity": 0.87,
-            },
-            {
-                "source_document": "postmortem-lessons.md",
-                "chunk_index": 2,
-                "excerpt": (
-                    "Lessons learned: (1) All limit changes require 72-hour advance notice. "
-                    "(2) Clients must have a documented escalation path. "
-                    "(3) Rate limit headers should be included in all API responses."
-                ),
-                "classification": "internal",
-                "retrieval_method": "vector",
-                "similarity": 0.82,
-            },
-            {
-                "source_document": "api-design-guidelines.md",
-                "chunk_index": 5,
-                "excerpt": (
-                    "API versioning policy: breaking changes require a deprecation notice period "
-                    "of at least 30 days. Rate limit adjustments are considered breaking changes "
-                    "when they reduce the existing limit."
-                ),
-                "classification": "public",
-                "retrieval_method": "vector",
-                "similarity": 0.74,
-            },
-        ]
+        "results": results,
+        "retrieval_source": "mcp-servers/retrieval/server.py",
     }
 
 
-def _sim_write_entry(inputs: dict, calling_role: str, audit_entries: list) -> dict:
+def _real_write_entry(
+    inputs: dict,
+    role: str,
+    project_id: str,
+) -> dict:
+    _set_calling_role(STORAGE_MCP, role)
+
     entry_id = str(uuid.uuid4())
-    _entry_store[entry_id] = {
-        "entry_id": entry_id,
-        "project_id": inputs["project_id"],
-        "entry_type": inputs["entry_type"],
-        "title": inputs["title"],
-        "content": inputs["content"],
-        "classification": inputs["classification"],
-        "last_updated": _utc_now(),
-    }
-    audit_entries.append({
-        "timestamp": _utc_now(),
-        "operation": "write_entry",
-        "project_id": inputs["project_id"],
-        "entry_id": entry_id,
-        "classification": inputs["classification"],
-        "calling_role": calling_role,
-    })
-    return {"entry_id": entry_id}
+    key = _storage_key(project_id, entry_id)
 
-
-def _sim_read_entry(inputs: dict, calling_role: str, audit_entries: list) -> dict:
-    entry_id = inputs.get("entry_id", "")
-    entry = _entry_store.get(entry_id, {
-        "entry_id": entry_id,
-        "project_id": inputs["project_id"],
-        "entry_type": "decision",
-        "title": "API validation rule",
-        "content": (
-            "We validate all API inputs against a JSON schema. "
-            "Empty arrays are rejected. Updated 2024-11-01."
-        ),
-        "classification": "internal",
-        "last_updated": _utc_now(),
-    })
-    audit_entries.append({
-        "timestamp": _utc_now(),
-        "operation": "read_entry",
-        "project_id": inputs["project_id"],
-        "entry_id": entry_id,
-        "classification": entry.get("classification", "internal"),
-        "calling_role": calling_role,
-    })
-    return entry
-
-
-def _sim_list_entries(inputs: dict) -> list:
-    project_id = inputs.get("project_id", "")
-    stored = [e for e in _entry_store.values() if e["project_id"] == project_id]
-    if stored:
-        return stored
-    return [
+    value = json.dumps(
         {
-            "entry_id": "fake-001",
+            "entry_id": entry_id,
             "project_id": project_id,
-            "entry_type": "decision",
-            "title": "API validation rule",
-            "classification": "internal",
+            "entry_type": inputs.get("entry_type", "decision"),
+            "title": inputs.get("title", ""),
+            "content": inputs.get("content", ""),
+            "classification": inputs.get("classification", "internal"),
             "last_updated": _utc_now(),
         }
+    )
+
+    STORAGE_MCP.write_entry(key=key, value=value)
+
+    return {
+        "entry_id": entry_id,
+        "project_id": project_id,
+        "storage_source": "mcp-servers/storage/server.py",
+    }
+
+
+def _real_read_entry(
+    inputs: dict,
+    role: str,
+    project_id: str,
+) -> dict:
+    _set_calling_role(STORAGE_MCP, role)
+
+    entry_id = str(inputs.get("entry_id", ""))
+    key = _storage_key(project_id, entry_id)
+    result = STORAGE_MCP.read_entry(key=key)
+
+    raw_value = result.get("value")
+    if raw_value is None:
+        return {
+            "entry_id": entry_id,
+            "project_id": project_id,
+            "value": None,
+            "storage_source": "mcp-servers/storage/server.py",
+        }
+
+    try:
+        parsed = json.loads(raw_value)
+    except (TypeError, json.JSONDecodeError):
+        parsed = {"value": raw_value}
+
+    if isinstance(parsed, dict):
+        parsed["storage_source"] = "mcp-servers/storage/server.py"
+        return parsed
+
+    return {
+        "entry_id": entry_id,
+        "project_id": project_id,
+        "value": parsed,
+        "storage_source": "mcp-servers/storage/server.py",
+    }
+
+
+def _real_list_entries(
+    inputs: dict,
+    role: str,
+    project_id: str,
+) -> dict:
+    _set_calling_role(STORAGE_MCP, role)
+
+    result = STORAGE_MCP.list_entries()
+    prefix = f"{project_id}:"
+
+    entry_ids = [
+        key[len(prefix):]
+        for key in result.get("keys", [])
+        if key.startswith(prefix)
     ]
 
+    return {
+        "project_id": project_id,
+        "entry_ids": entry_ids,
+        "storage_source": "mcp-servers/storage/server.py",
+    }
 
-def _sim_update_entry(inputs: dict, calling_role: str, audit_entries: list) -> dict:
-    entry_id = inputs.get("entry_id", "")
-    classification = "internal"
-    if entry_id in _entry_store:
-        _entry_store[entry_id]["content"] = inputs["content"]
-        _entry_store[entry_id]["last_updated"] = _utc_now()
-        classification = _entry_store[entry_id].get("classification", "internal")
-    audit_entries.append({
-        "timestamp": _utc_now(),
-        "operation": "update_entry",
-        "project_id": inputs["project_id"],
+
+def _real_update_entry(
+    inputs: dict,
+    role: str,
+    project_id: str,
+) -> dict:
+    _set_calling_role(STORAGE_MCP, role)
+
+    entry_id = str(inputs.get("entry_id", ""))
+    key = _storage_key(project_id, entry_id)
+
+    existing = STORAGE_MCP.read_entry(key=key).get("value")
+    if existing is None:
+        return {
+            "ok": False,
+            "error": "entry_not_found",
+            "entry_id": entry_id,
+        }
+
+    try:
+        value = json.loads(existing)
+    except (TypeError, json.JSONDecodeError):
+        value = {"content": existing}
+
+    if not isinstance(value, dict):
+        value = {"content": str(value)}
+
+    value["content"] = inputs.get("content", "")
+    value["last_updated"] = _utc_now()
+
+    STORAGE_MCP.update_entry(
+        key=key,
+        value=json.dumps(value),
+    )
+
+    return {
+        "ok": True,
         "entry_id": entry_id,
-        "classification": classification,
-        "calling_role": calling_role,
-    })
-    return {"success": True}
+        "storage_source": "mcp-servers/storage/server.py",
+    }
 
 
-def _sim_delete_entry(inputs: dict, calling_role: str, audit_entries: list) -> dict:
-    entry_id = inputs.get("entry_id", "")
-    entry = _entry_store.pop(entry_id, {})
-    classification = entry.get("classification", "internal")
-    audit_entries.append({
-        "timestamp": _utc_now(),
-        "operation": "delete_entry",
-        "project_id": inputs["project_id"],
+def _real_delete_entry(
+    inputs: dict,
+    role: str,
+    project_id: str,
+) -> dict:
+    _set_calling_role(STORAGE_MCP, role)
+
+    entry_id = str(inputs.get("entry_id", ""))
+    key = _storage_key(project_id, entry_id)
+
+    result = STORAGE_MCP.delete_entry(key=key)
+
+    return {
+        "ok": result.get("ok", False),
+        "deleted": result.get("deleted", False),
         "entry_id": entry_id,
-        "classification": classification,
-        "calling_role": calling_role,
-    })
-    return {"success": True}
+        "storage_source": "mcp-servers/storage/server.py",
+    }
 
 
 def execute_tool(
@@ -305,23 +370,57 @@ def execute_tool(
     project_id: str,
     audit_entries: list,
 ) -> tuple[dict, dict]:
-    """Run a simulated tool and return (result, transcript_event)."""
-    if tool_name == "retrieve":
-        result = _sim_retrieve(inputs)
-    elif tool_name == "write_entry":
-        result = _sim_write_entry(inputs, role, audit_entries)
-    elif tool_name == "read_entry":
-        result = _sim_read_entry(inputs, role, audit_entries)
-    elif tool_name == "list_entries":
-        result = _sim_list_entries(inputs)
-    elif tool_name == "update_entry":
-        result = _sim_update_entry(inputs, role, audit_entries)
-    elif tool_name == "delete_entry":
-        result = _sim_delete_entry(inputs, role, audit_entries)
-    else:
-        result = {"error": f"unknown tool: {tool_name}"}
+    """
+    Execute the repository's real MCP component functions.
 
-    event = {"type": "tool_call", "role": role, "tool": tool_name, "result": result}
+    The underlying MCP servers enforce their own role allow-lists and write
+    their own audit logs. The orchestrator keeps a compact transcript event
+    for end-to-end evidence.
+    """
+    try:
+        if tool_name == "retrieve":
+            result = _real_retrieve(inputs, role)
+        elif tool_name == "write_entry":
+            result = _real_write_entry(inputs, role, project_id)
+        elif tool_name == "read_entry":
+            result = _real_read_entry(inputs, role, project_id)
+        elif tool_name == "list_entries":
+            result = _real_list_entries(inputs, role, project_id)
+        elif tool_name == "update_entry":
+            result = _real_update_entry(inputs, role, project_id)
+        elif tool_name == "delete_entry":
+            result = _real_delete_entry(inputs, role, project_id)
+        else:
+            result = {"error": f"unknown tool: {tool_name}"}
+
+        outcome = "success" if "error" not in result else "error"
+
+    except Exception as exc:
+        result = {
+            "error": type(exc).__name__,
+            "message": str(exc),
+        }
+        outcome = "denied_or_failed"
+
+    audit_entries.append(
+        {
+            "timestamp": _utc_now(),
+            "operation": tool_name,
+            "project_id": project_id,
+            "calling_role": role,
+            "outcome": outcome,
+            "tool_mode": "real_mcp_component",
+        }
+    )
+
+    event = {
+        "type": "tool_call",
+        "role": role,
+        "tool": tool_name,
+        "tool_mode": "real_mcp_component",
+        "result": result,
+    }
+
     return result, event
 
 
@@ -343,13 +442,16 @@ _ROLE_DESCRIPTIONS = {
         "for every write."
     ),
     "reviewer": (
-        "You are the Reviewer. Read the implementation and evaluate it. "
-        "For each section, record whether you approve or reject it. "
-        "Be explicit about your verdict."
+    "You are the Reviewer. Read the implementation and evaluate it. "
+    "For each section, record whether you approve or reject it. "
+    "Be explicit about your verdict. "
+    "When reviewing a stored decision record, use the exact entry_id provided "
+    "in the previous agent handoff. Do not invent, rename, summarize, or guess "
+    "an entry_id. If an exact entry_id is available, read that entry directly "
+    "instead of searching for another ID."
     ),
     "tester": (
-        "You are the Tester. Read the implementation entry and confirm it meets "
-        "the stated requirements. Report your findings clearly."
+        "When validating a stored decision record, use the exact entry_id provided in the previous agent handoff. Do not invent, rename, summarize, or guess an entry_id."
     ),
 }
 
@@ -434,7 +536,8 @@ def run_role(
     project_id: str,
     audit_entries: list,
     canary: str | None,
-) -> tuple[str, dict, list, list]:
+    remaining_token_budget: int,
+) -> tuple[str, dict, list, list, int]:
     """
     Run one subagent role.
 
@@ -443,6 +546,7 @@ def run_role(
         output_document - dict with summary + citation_list
         review_items    - list of {section, verdict} (reviewer only)
         tool_events     - list of tool_call transcript events
+        role_tokens     - total input + output tokens used by this role
     """
     allowed_tools = GRANT_MAP.get(role, [])
     tools = [ALL_TOOL_SCHEMAS[t] for t in allowed_tools if t in ALL_TOOL_SCHEMAS]
@@ -452,25 +556,78 @@ def run_role(
 
     tool_events: list[dict] = []
     final_text = ""
+    role_tokens = 0
 
     print(f"  [{role}] starting (step {step})", flush=True)
 
-    for iteration in range(10):  # safety cap
+    for iteration in range(MAX_ITERATIONS_PER_ROLE):
+        remaining_for_role = remaining_token_budget - role_tokens
+        if remaining_for_role <= 0:
+            raise RuntimeError(
+                f"{role} stopped because the workflow token budget was exhausted."
+            )
+
         kwargs: dict = dict(
             model=MODEL,
-            max_tokens=2048,
+            max_tokens=min(1200, remaining_for_role),
             system=system,
             messages=messages,
         )
         if tools:
             kwargs["tools"] = tools
 
-        response = client.messages.create(**kwargs)
-        token_count = response.usage.input_tokens + response.usage.output_tokens
+        response = None
 
-        # Collect text and tool_use blocks
+        # Reliability control: timeout + bounded retry with exponential backoff.
+        for attempt in range(MAX_RETRIES + 1):
+            try:
+                response = client.messages.create(
+                    **kwargs,
+                    timeout=REQUEST_TIMEOUT_SECONDS,
+                )
+
+                if response is None or not getattr(response, "content", None):
+                    raise RuntimeError(f"{role} received an empty model response")
+
+                break
+
+            except Exception as exc:
+                if attempt >= MAX_RETRIES:
+                    raise RuntimeError(
+                        f"{role} failed after {MAX_RETRIES + 1} attempts: {exc}"
+                    ) from exc
+
+                wait_seconds = 2 ** attempt
+                print(
+                    f"    [{role}] request failed; retrying in {wait_seconds}s "
+                    f"(attempt {attempt + 1}/{MAX_RETRIES + 1})",
+                    flush=True,
+                )
+                time.sleep(wait_seconds)
+
+        if response is None:
+            raise RuntimeError(f"{role} did not receive a model response")
+
+        if response.usage is not None:
+            token_count = (
+                (response.usage.input_tokens or 0)
+                + (response.usage.output_tokens or 0)
+            )
+        else:
+            token_count = 0
+
+        role_tokens += token_count
+
+        if role_tokens > remaining_token_budget:
+            raise RuntimeError(
+                f"{role} exceeded the remaining workflow token budget: "
+                f"{role_tokens} > {remaining_token_budget}"
+            )
+
+        # Collect text and tool_use blocks.
         text_parts: list[str] = []
         tool_use_blocks: list = []
+
         for block in response.content:
             if block.type == "text":
                 text_parts.append(block.text)
@@ -483,30 +640,48 @@ def run_role(
         if not tool_use_blocks or response.stop_reason == "end_turn":
             break
 
-        # Execute tools and build the next turn
+        # Execute tools and build the next turn.
         tool_results = []
         for block in tool_use_blocks:
             print(f"    [{role}] calling {block.name}", flush=True)
             result, event = execute_tool(
-                block.name, block.input, role, project_id, audit_entries
+                block.name,
+                block.input,
+                role,
+                project_id,
+                audit_entries,
             )
             tool_events.append(event)
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": block.id,
-                "content": json.dumps(result),
-            })
+            tool_results.append(
+                {
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": json.dumps(result),
+                }
+            )
 
         messages.append({"role": "assistant", "content": response.content})
         messages.append({"role": "user", "content": tool_results})
+    else:
+        raise RuntimeError(
+            f"{role} reached the maximum of {MAX_ITERATIONS_PER_ROLE} iterations."
+        )
 
     parsed = extract_final_json(final_text)
     next_handoff = parsed.get("handoff", "")
-    output_document = parsed.get("output_document", {"summary": final_text[:500], "citation_list": []})
+    output_document = parsed.get(
+        "output_document",
+        {"summary": final_text[:500], "citation_list": []},
+    )
     review_items = parsed.get("review_items", [])
 
-    print(f"  [{role}] done. handoff: {next_handoff[:80]}...", flush=True)
-    return next_handoff, output_document, review_items, tool_events
+    print(
+        f"  [{role}] done. handoff: {next_handoff[:80]}... "
+        f"(tokens: {role_tokens})",
+        flush=True,
+    )
+
+    return next_handoff, output_document, review_items, tool_events, role_tokens
 
 
 # ── orchestrator ──────────────────────────────────────────────────────────────
@@ -533,7 +708,20 @@ def run_orchestrator(
 
     for step, role in enumerate(expected_path, start=1):
         role_start = time.time()
-        next_handoff, output_doc, review_items, tool_events = run_role(
+        remaining_token_budget = MAX_TOKENS_PER_RUN - total_tokens
+        if remaining_token_budget <= 0:
+            raise RuntimeError(
+                f"Workflow stopped because the token budget of "
+                f"{MAX_TOKENS_PER_RUN} tokens was exhausted."
+            )
+
+        (
+            next_handoff,
+            output_doc,
+            review_items,
+            tool_events,
+            role_tokens,
+        ) = run_role(
             client=client,
             role=role,
             task=task,
@@ -542,7 +730,9 @@ def run_orchestrator(
             project_id=project_id,
             audit_entries=audit_entries,
             canary=canary,
+            remaining_token_budget=remaining_token_budget,
         )
+        total_tokens += role_tokens
         role_elapsed = time.time() - role_start
 
         # Record all tool calls for this role
@@ -556,6 +746,8 @@ def run_orchestrator(
             "handoff": next_handoff,
             "output_document": output_doc,
             "review_items": review_items,
+            "duration_seconds": round(role_elapsed, 1),
+            "token_usage": role_tokens,
         }
         transcript_events.append(subagent_event)
         handoff = next_handoff
@@ -582,6 +774,11 @@ def run_orchestrator(
         "expected_path": expected_path,
         "duration_seconds": duration,
         "token_cost": total_tokens,
+        "token_budget": MAX_TOKENS_PER_RUN,
+        "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
+        "max_retries": MAX_RETRIES,
+        "max_iterations_per_role": MAX_ITERATIONS_PER_ROLE,
+        "tool_mode": "real_mcp_component",
         "events": transcript_events,
         "escalated_to_human": escalated,
     }
@@ -601,7 +798,11 @@ def run_orchestrator(
         for entry in audit_entries:
             f.write(json.dumps(entry) + "\n")
     print(f"Audit log written to:  {log_path}", flush=True)
-    print(f"Duration: {duration}s  |  Audit entries: {len(audit_entries)}", flush=True)
+    print(
+        f"Duration: {duration}s  |  Tokens: {total_tokens}/{MAX_TOKENS_PER_RUN}  "
+        f"|  Audit entries: {len(audit_entries)}",
+        flush=True,
+    )
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────

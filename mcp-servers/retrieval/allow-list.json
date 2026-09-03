@@ -1,5 +1,9 @@
 {
   "retrieve": {
+    "planner": {
+  "granted": true,
+  "classification_ceiling": "internal"
+  },
     "implementer": {
       "granted": true,
       "classification_ceiling": "internal"

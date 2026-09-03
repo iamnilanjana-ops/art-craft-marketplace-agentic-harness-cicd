@@ -28,7 +28,42 @@ Software changes require multiple review steps, including planning, implementati
 
 The capstone will demonstrate how specialized AI agents can assist with judgment-heavy engineering tasks while deterministic checks and human approval provide predictable and safe controls.
 
+### Representative Before-State Baseline
 
+Because this is a job-seeker capstone rather than a live production deployment, the before-state is defined using a representative manual-review scenario rather than proprietary company data.
+
+For one representative software change, the manual workflow requires approximately:
+
+- 10 minutes for planning and change review
+- 10 minutes for implementation review
+- 10 minutes for reviewer validation
+- 5 minutes for test-result verification
+- 5 minutes for approval and documentation
+
+This produces a representative baseline of approximately **40 minutes of human review effort per change**.
+
+At a representative volume of **10 changes per week**, this equals approximately **400 minutes (6.7 reviewer hours) per week**.
+
+The capstone evaluates whether the governed multi-agent pipeline can reduce this review burden while maintaining deterministic validation, governance controls, human approval where required, and an auditable record of the workflow.
+
+These values are representative planning assumptions for the capstone and are not claimed as measurements from a production organization.
+
+### Why a Custom Governed Pipeline
+
+A single prebuilt or unrestricted coding agent could generate or review code, but it would not provide the same separation of responsibilities, scoped tool permissions, deterministic validation, independent review, human approval checkpoints, and audit evidence required by this workflow.
+
+This capstone therefore uses a custom multi-agent pipeline because the workflow combines several different responsibilities:
+
+- planning and implementation
+- independent review and testing
+- role-specific MCP tool permissions
+- deterministic policy and schema checks
+- persistent audit evidence
+- human escalation for higher-risk or conflicting decisions
+
+A simpler automation is appropriate for predictable checks such as schema validation and policy enforcement, and those steps remain deterministic in this architecture. Agent reasoning is reserved for judgment-heavy work such as planning, implementation, and review.
+
+This separation provides a concrete reason to use a governed custom pipeline rather than replacing the entire workflow with one general-purpose agent.
 
 \## 3. Stakeholder
 

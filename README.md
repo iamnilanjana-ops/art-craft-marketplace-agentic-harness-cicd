@@ -25,6 +25,41 @@ The repository includes:
 - **CI/CD guardrails** — policy, governed-file, pipeline-integrity, advisory-review, and audit-trail checks.
 - **Persistent evidence** — transcripts, audit logs, calibration records, ADRs, and final capstone reports.
 
+## Sandbox Boundaries
+
+The capstone uses two container execution modes:
+
+1. **Restricted deterministic sandbox** — used for tests and validation that do not require an external model API. Network access is disabled with `--network none`, and no credentials are passed into the container.
+
+```bash
+docker run --rm \
+  --network none \
+  -v "$PWD":/workspace \
+  -w /workspace \
+  agentic_engineer_4 \
+  python3 -m pytest eval/ -v
+Parallel runs are isolated by using separate container instances and separate run identifiers. Each orchestration run writes its transcript to a unique timestamped file under `.eval-artifacts/runs/`, which prevents one run from overwriting another. Writable runtime state is scoped to the project workspace, while each container process has its own isolated process namespace and lifecycle.
+
+### Parallel-session isolation verification
+
+Parallel container isolation was tested with two simultaneous Docker containers using `--network none`. Each container wrote a different value to the same internal path, `/tmp/session.txt`.
+
+Observed results:
+
+- Container A returned `session-a`
+- Container B returned `session-b`
+
+Neither container overwrote or read the other container's value. This verifies that concurrent sessions have isolated container filesystems and process lifecycles.
+
+### Network isolation verification
+
+The restricted sandbox was tested with Docker `--network none` by attempting an outbound HTTPS request:
+
+```bash
+docker run --rm --network none --entrypoint /bin/bash \
+  agentic_engineer_4:latest \
+  -lc "curl -I https://example.com"
+  
 ## Quick Start
 
 Build and run locally:

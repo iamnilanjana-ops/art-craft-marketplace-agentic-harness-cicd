@@ -683,7 +683,31 @@ def run_role(
 
     return next_handoff, output_document, review_items, tool_events, role_tokens
 
+def detect_reviewer_conflict(transcript_events: list[dict]) -> tuple[bool, list[str]]:
+    """Detect opposite reviewer verdicts on the same section."""
+    reviewer_events = [
+        e for e in transcript_events
+        if e.get("type") == "subagent"
+        and e.get("role", "").startswith("reviewer")
+    ]
 
+    verdicts: dict[str, set[str]] = {}
+
+    for rev in reviewer_events:
+        for item in rev.get("review_items", []):
+            section = item.get("section")
+            verdict = item.get("verdict")
+
+            if section and verdict:
+                verdicts.setdefault(section, set()).add(verdict)
+
+    conflicts = [
+        section
+        for section, values in verdicts.items()
+        if "approve" in values and "reject" in values
+    ]
+
+    return bool(conflicts), conflicts
 # ── orchestrator ──────────────────────────────────────────────────────────────
 
 def run_orchestrator(
@@ -754,7 +778,14 @@ def run_orchestrator(
 
     duration = round(time.time() - start, 1)
 
-    # Check for reviewer conflicts and set escalation flag
+   # Check for reviewer conflicts and set escalation flag
+    escalated, conflicts = detect_reviewer_conflict(transcript_events)
+
+    if escalated:
+        print(
+            f"  Reviewer conflict detected on: {conflicts}. "
+        "Setting escalated_to_human=true."
+    )
     reviewer_events = [
         e for e in transcript_events
         if e.get("type") == "subagent" and e.get("role", "").startswith("reviewer")

@@ -35,21 +35,19 @@ The measurements recorded in `docs/calibration-log.md` are:
 
 
 
-## 3. Cycle-Time Impact
+## 2A. Required Five-Metric Before/After Summary
 
+The following table consolidates the five impact metrics required for the capstone. Values are reported only where supporting evidence exists; unsupported values are explicitly marked rather than estimated.
 
+| Required Metric | Before | After | Evidence / Interpretation |
+|---|---:|---:|---|
+| Quality | 7/7 deterministic checks passing | 7/7 deterministic checks passing; later integrated regression suite 24/24 passing | Measured quality was preserved while the validation step was simplified. |
+| Review latency | ~30 seconds | ~5 seconds | Measured for the handoff-validation path. |
+| Defect rate | No reliable baseline defect-rate percentage recorded | No general defect-rate percentage claimed; final successful run recorded 0 rejected evaluation items across 8 recorded review items | Evidence shows a successful evaluated run, but is insufficient to claim a general 0% defect rate. |
+| Cycle time | 45 seconds | 0.2 seconds | Measured for handoff validation after conversion from agentic to deterministic execution. |
+| Cost | ~$0.003 model-token cost per validation run | $0 model-token cost for the deterministic validation step | This comparison applies only to the converted validation step, not the complete multi-agent workflow. |
 
-The measured handoff-validation cycle time decreased from 45 seconds to 0.2 seconds.
-
-
-
-This represents a reduction of approximately 44.8 seconds per validation run.
-
-
-
-The deterministic implementation therefore performs the stable validation step substantially faster while preserving the recorded deterministic checks.
-
-
+This comparison shows that the stable validation step became faster and removed its model-token cost without reducing the recorded deterministic quality result. Where a trustworthy baseline was unavailable, the report intentionally avoids inventing a value.
 
 ## 4. Cost Impact
 

@@ -716,6 +716,7 @@ def run_orchestrator(
     project_id: str,
     out_path: str,
     canary: str | None,
+    human_approval: str,
 ) -> None:
     client = anthropic.Anthropic(
         base_url="https://openrouter.ai/api",
@@ -776,6 +777,18 @@ def run_orchestrator(
         transcript_events.append(subagent_event)
         handoff = next_handoff
 
+        human_event = {
+        "type": "human_approval",
+        "decision": human_approval,
+        "status": (
+            "approved"
+            if human_approval == "approve"
+            else "rejected"
+            if human_approval == "reject"
+            else "pending"
+        ),
+    }
+    transcript_events.append(human_event)
     duration = round(time.time() - start, 1)
 
     # Check for reviewer conflicts and set escalation flag
@@ -786,6 +799,7 @@ def run_orchestrator(
             f"  Reviewer conflict detected on: {conflicts}. "
             "Setting escalated_to_human=true."
         )
+    completion_authorized = human_approval == "approve"
     transcript: dict = {
         "expected_path": expected_path,
         "duration_seconds": duration,
@@ -797,6 +811,8 @@ def run_orchestrator(
         "tool_mode": "real_mcp_component",
         "events": transcript_events,
         "escalated_to_human": escalated,
+        "human_approval": human_approval,
+        "completion_authorized": completion_authorized,
     }
     if canary:
         transcript["canary"] = canary
@@ -847,6 +863,12 @@ def main() -> None:
     parser.add_argument("--project", default="demo-project", help="Project ID for storage calls")
     parser.add_argument("--out", default=None, help="Output transcript path")
     parser.add_argument("--canary", default=None, help="Optional canary string")
+    parser.add_argument(
+        "--human-approval",
+        choices=["approve", "reject", "pending"],
+        default="pending",
+        help="Explicit human approval decision after automated review and testing",
+    )
     args = parser.parse_args()
 
     if args.out is None:
@@ -859,6 +881,7 @@ def main() -> None:
         project_id=args.project,
         out_path=args.out,
         canary=args.canary,
+        human_approval=args.human_approval,
     )
 
 

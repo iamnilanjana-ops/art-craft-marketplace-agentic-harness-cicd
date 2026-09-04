@@ -778,29 +778,14 @@ def run_orchestrator(
 
     duration = round(time.time() - start, 1)
 
-   # Check for reviewer conflicts and set escalation flag
+    # Check for reviewer conflicts and set escalation flag
     escalated, conflicts = detect_reviewer_conflict(transcript_events)
 
     if escalated:
         print(
             f"  Reviewer conflict detected on: {conflicts}. "
-        "Setting escalated_to_human=true."
-    )
-    reviewer_events = [
-        e for e in transcript_events
-        if e.get("type") == "subagent" and e.get("role", "").startswith("reviewer")
-    ]
-    escalated = False
-    if len(reviewer_events) >= 2:
-        verdicts: dict[str, set] = {}
-        for rev in reviewer_events:
-            for item in rev.get("review_items", []):
-                verdicts.setdefault(item["section"], set()).add(item["verdict"])
-        conflicts = [s for s, v in verdicts.items() if "approve" in v and "reject" in v]
-        if conflicts:
-            escalated = True
-            print(f"  Reviewer conflict detected on: {conflicts}. Setting escalated_to_human=true.")
-
+            "Setting escalated_to_human=true."
+        )
     transcript: dict = {
         "expected_path": expected_path,
         "duration_seconds": duration,

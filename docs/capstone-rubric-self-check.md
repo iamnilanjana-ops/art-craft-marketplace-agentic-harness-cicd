@@ -1,4 +1,4 @@
-ï»¿# Agentic Engineer Capstone -- Rubric Self-Check
+# Agentic Engineer Capstone -- Rubric Self-Check
 
 
 
@@ -120,7 +120,7 @@ Evidence:
 - `docs/calibration-log.md`
 - `docs/capstone-impact-report.md`
 - `docs/run-summary.md`
-- `logs/capstone-final-run-002.json`
+- `logs/capstone-final-human-approved-run.json`
 
 The rubric defines four judgment dimensions with pass thresholds.
 
@@ -227,7 +227,7 @@ Evidence:
 - `eval/run_regression.py`
 - regression and policy tests
 - retrieval validation evidence
-- `logs/capstone-final-run-002.json`
+- `logs/capstone-final-human-approved-run.json`
 - `docs/run-summary.md`
 
 The project uses a two-layer evaluation design combining deterministic checks with judgment-based evaluation criteria.
@@ -371,19 +371,18 @@ Completed evidence:
 
 - successful production-like model-backed orchestration;
 - Planner -> Implementer -> Reviewer -> Tester execution;
-- semantic retrieval and persistent-storage activity;
+- deterministic lexical retrieval with classification-ceiling enforcement and persistent-storage activity;
 - Implementer storage write with downstream verification;
 - governance enforcement;
 - tool-evolution drill;
 - regression detection and recovery;
 - preserved transcript and audit evidence.
 
-The successful final production-like run completed in 59.6 seconds.
+The successful final human-approved production-like run completed in 46.8 seconds using 33,519 of the bounded 38,000-token workflow budget. Human approval was `approve` and `completion_authorized` was `true`.
 
 Evidence:
 
-- `logs/capstone-final-run-002.json`
-- `logs/capstone-final-run-002.log`
+- `logs/capstone-final-human-approved-run.json`
 - `docs/run-summary.md`
 - `docs/capstone-tool-evolution-drill.md`
 
@@ -534,7 +533,7 @@ Remaining work includes:
 |---|---|
 | Workflow Scoping | Complete |
 | Sandboxed Environment | Complete |
-| Quality Spec & Baseline | Partial â€” historical baseline limitations documented |
+| Quality Spec & Baseline | Partial — historical baseline limitations documented |
 | Agents, Skills & Memory | Complete |
 | Orchestration & MCP Tools | Complete |
 | Evaluation & Calibration | Complete |
@@ -542,8 +541,8 @@ Remaining work includes:
 | Right-Tool Decisions & ADRs | Complete |
 | Production Integration & Tool-Evolution Drill | Complete |
 | Iteration Narrative & Impact | Complete with documented measurement limitations |
-| Stakeholder Communication | Partial â€” walkthrough video remaining |
-| Clarity & Flow | Partial â€” final walkthrough/package remaining |
+| Stakeholder Communication | Partial — walkthrough video remaining |
+| Clarity & Flow | Partial — final walkthrough/package remaining |
 | Design | Pending Final Packaging |
 
 ## Remaining Critical Path
@@ -564,13 +563,14 @@ The production-like workflow, transcript and audit evidence, impact-report updat
 
 The repository now contains substantial completed evidence for workflow design, sandboxed execution, specialized agents, memory architecture, orchestration, MCP boundaries, evaluation and calibration, governance, CI/CD controls, deterministic conversion, ADRs, production-like integration, and tool-evolution testing.
 
-A successful production-like run is preserved in `logs/capstone-final-run-002.json` with supporting audit evidence and a final run summary.
+A successful production-like run is preserved in `logs/capstone-final-human-approved-run.json` with supporting audit evidence and a final run summary.
 
 The remaining work is concentrated on final submission packaging and presentation rather than core system implementation.
 
 Known limitations remain explicitly documented: the historical baseline does not contain every desired capstone metric, the final transcript does not establish a trustworthy full-pipeline model-cost measurement, one successful run is not sufficient to claim a general 0% defect rate, and the successful final run did not trigger the human-escalation path.
 
 These limitations are reported rather than filled with estimated or invented results.
+
 
 
 

@@ -57,8 +57,8 @@ def _retrieval_ceiling() -> str:
     return str(rule["classification_ceiling"])
 
 
-def _vector_search(query: str, top_k: int) -> list[dict[str, Any]]:
-    # Sample lexical search. Replace with sqlite-vec / embedding search from Module 4.
+def _lexical_search(query: str, top_k: int) -> list[dict[str, Any]]:
+    # Deterministic lexical retrieval over the local corpus.
     docs = json.loads(CORPUS_PATH.read_text(encoding="utf-8"))
     query_terms = set(query.lower().split())
     scored = []
@@ -74,7 +74,7 @@ def _vector_search(query: str, top_k: int) -> list[dict[str, Any]]:
 def retrieve(query: str, top_k: int = 5) -> list:
     ceiling = _retrieval_ceiling()
     max_level = CLASSIFICATION_ORDER.index(ceiling)
-    candidates = _vector_search(query, top_k)
+    candidates = _lexical_search(query, top_k)
     visible = []
     withheld = 0
     for doc in candidates:

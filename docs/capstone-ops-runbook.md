@@ -1,4 +1,4 @@
-﻿# Agentic Engineer Capstone -- Ops-Ready Runbook
+# Agentic Engineer Capstone -- Ops-Ready Runbook
 
 
 
@@ -341,17 +341,17 @@ The successful run completed the expected:
 
 `Planner -> Implementer -> Reviewer -> Tester`
 
-path in 59.6 seconds.
+path in 46.8 seconds, using 33,519 of the bounded 38,000-token workflow budget.
 
-The run exercised semantic retrieval, persistent-storage reads, an Implementer storage write, Reviewer verification, and Tester validation.
+The run exercised deterministic lexical retrieval with classification-ceiling enforcement, persistent-storage reads, an Implementer storage write, Reviewer verification, and Tester validation. The explicit human approval decision was `approve`, and completion was authorized.
 
 Transcript evidence is stored in:
 
-`logs/capstone-final-run-002.json`
+`logs/capstone-final-human-approved-run.json`
 
-Audit evidence is stored in:
+Tool-call and governance evidence, including authorization denials, is embedded in the same successful transcript:
 
-`logs/capstone-final-run-002.log`
+`logs/capstone-final-human-approved-run.json`
 
 An earlier run, `capstone-final-run-001`, is retained as evidence of an integration failure caused by insufficient task context. The failure was corrected before the successful final run.
 
@@ -960,6 +960,9 @@ The operational principle for this system is:
 
 
 \*\*Fail closed, preserve evidence, escalate when authority or data scope is exceeded, and only claim results that were actually measured.\*\*
+
+
+
 
 
 

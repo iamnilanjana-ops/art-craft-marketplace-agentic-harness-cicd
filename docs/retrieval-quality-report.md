@@ -125,3 +125,13 @@ The final paragraph run reproduced the original result of **7/8 passing (87.5%)*
 The remaining Q8 gap is understood and documented: the correct source is retrieved through keyword fallback, but its vector similarity does not meet the pre-established `0.65` precision criterion. No confidence threshold was weakened to force a passing result.
 
 Final validation status: **7/8 PASS — 87.5% — validation bar cleared with one documented retrieval-quality gap.**
+
+## Current Production Retrieval Implementation
+
+The semantic/vector results above document an earlier retrieval-quality experiment and calibration exercise. They are retained as historical evaluation evidence.
+
+The current MCP retrieval server used by the capstone production-like workflow does not use an embedding model or vector database. It uses deterministic lexical matching over the local corpus, followed by role-based classification-ceiling enforcement.
+
+Current implementation: mcp-servers/retrieval/server.py
+
+Therefore, semantic/vector scores in this report should not be interpreted as evidence of the current production MCP server implementation.

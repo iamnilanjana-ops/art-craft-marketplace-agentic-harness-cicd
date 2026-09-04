@@ -54,7 +54,7 @@ MODEL = "anthropic/claude-haiku-4.5"
 REQUEST_TIMEOUT_SECONDS = 30.0
 MAX_RETRIES = 2
 MAX_ITERATIONS_PER_ROLE = 6
-MAX_TOKENS_PER_RUN = 24000
+MAX_TOKENS_PER_RUN = 32000
 
 # ── tool grant map (mirrors docs/routing-and-tool-grant-map.json) ─────────────
 

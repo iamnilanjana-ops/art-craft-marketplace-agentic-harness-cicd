@@ -1,15 +1,42 @@
 # Calibration Log
 
-## Near-miss patterns for Module 4 governance
+## Near-Miss Patterns for Module 4 Governance
 
-1. The implementer subagent nearly called `delete_entry` on the storage server because its tool grant was temporarily too broad.  
-   **Risk:** an implementer with delete access can silently remove project state that other subagents depend on.
+### 1. Implementer Delete Permission
 
-2. A reviewer subagent's task output nearly triggered the `run-tests` skill, which is meant for the implementer and tester.  
-   **Risk:** a read-only review role that can run tests can change the state of the workspace it is only supposed to inspect.
+During governance calibration, the Implementer was identified as having an overly broad potential `delete_entry` capability.
 
-3. An implementer requested a document tagged `confidential`, above its `internal` ceiling, and the retrieval server refused it.  
-   **Risk:** a role that can reach above its classification ceiling can pull sensitive material into a context it was not cleared for.
+**Risk:** An Implementer with delete access could remove project state required by downstream agents.
+
+**Evidence status:** Historical calibration/design finding. No executed `delete_entry` denial event for the Implementer is present in the current audit log, so this is not claimed as runtime denial evidence.
+
+**Resulting control:** The final governance policy does not grant `delete_entry` to the Implementer. The policy test verifies that the role is excluded from this permission.
+
+### 2. Reviewer Test-Skill Activation
+
+During calibration, Reviewer output exposed the risk of activating the `run-tests` skill even though the Reviewer is intended to remain read-only.
+
+**Risk:** A review-only role should not execute a capability that may change workspace state.
+
+**Evidence status:** Historical calibration/design finding. No `skill_activation_denied` runtime log for the Reviewer is present in the current evidence, so this is not claimed as an executed denial.
+
+**Resulting control:** The final governance policy explicitly denies `run-tests` to the Reviewer.
+
+### 3. Confidential Retrieval Above Classification Ceiling
+
+The retrieval evaluation tested whether an internal-level workflow could retrieve the confidential `cost-breakdown.md` document.
+
+**Risk:** Retrieval above a role's classification ceiling could expose sensitive information to an unauthorized workflow.
+
+**Executed evidence:** `docs/retrieval-quality-report.md`, Q5 — Classification Ceiling Enforcement.
+
+- Requested information matched confidential cost data.
+- Classification ceiling: `internal`.
+- Forbidden document: `cost-breakdown.md` (`confidential`).
+- The confidential document was not returned.
+- Result: **PASS**.
+
+**Resulting control:** Retrieval enforces classification ceilings and prevents confidential material from being returned to internal-only workflows.
 
 ## Conversion measurements
 

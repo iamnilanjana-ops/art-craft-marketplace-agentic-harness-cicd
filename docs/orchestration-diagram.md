@@ -2,17 +2,39 @@
 
 ```mermaid
 flowchart TD
-    A[Orchestrator] --> B[Detect changed files]
-    B --> C[Validate handoff JSON\nvalidate_handoff_deterministic.py]
-    C --> D{Route task}
-    D -->|code| E[Implementer]
-    D -->|review| F[Reviewer]
-    D -->|tests| G[Tester]
-    D -->|description| H[Project Manager]
-    E --> I[Policy and eval gates]
-    F --> I
-    G --> I
-    H --> I
+    A[Orchestrator] --> B[Planner]
+    B --> C[Implementer]
+    C --> D[Reviewer]
+    D --> E[Tester]
+    E --> F{Human Approval}
+
+    F -->|Approve| G[Project Manager / Completion]
+    F -->|Reject| H[Completion Blocked]
+    F -->|Pending| H
+
+    D -->|Reviewer Conflict| I[Escalate to Human]
+
+    B --> J[Scoped MCP Tools]
+    C --> J
+    D --> J
+    E --> J
+
+    J --> K[Policy and Evaluation Gates]
 ```
 
-The validator is deterministic and does not call a model. Agentic steps still run under the per-role governance policy.
+## Workflow
+
+The default governed workflow is:
+
+**Planner → Implementer → Reviewer → Tester → Human Approval → Completion**
+
+Automated review and testing do not authorize final completion by themselves. After the Tester finishes, the workflow records an explicit human decision.
+
+- `approve` → completion is authorized.
+- `reject` → completion is blocked.
+- `pending` → completion remains blocked.
+- Conflicting reviewer verdicts trigger escalation to a human.
+
+The orchestrator also applies scoped tool grants, deterministic validation, token budgets, request timeouts, bounded retries, and audit/transcript logging.
+
+The Human Approval gate ensures that successful automated agent output cannot silently become final workflow completion without an explicit human decision.
